@@ -1,0 +1,710 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.4">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1">&lt;meta charset="UTF-8"/&gt;</p>
+<p class="p1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"/&gt;</p>
+<p class="p1">&lt;title&gt;MLB WEATHER HQ&lt;/title&gt;</p>
+<p class="p1">&lt;link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet"/&gt;</p>
+<p class="p1">&lt;style&gt;</p>
+<p class="p1">:root {</p>
+<p class="p1"><span class="Apple-converted-space">  </span>--bg:#080b10; --surface:#0d1219; --panel:#111820; --border:#1c2533; --border2:#243040;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>--text:#dce8f5; --muted:#4a6080; --dim:#2a3a50; --accent:#f0c040;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>--c-red:#ff4545; --c-yellow:#f0c040; --c-dull:#6fcf60; --c-green:#30d98a;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>--blue:#3b9bff; --orange:#ff8c30;</p>
+<p class="p1">}</p>
+<p class="p1">*{box-sizing:border-box;margin:0;padding:0;}</p>
+<p class="p1">body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden;}</p>
+<p class="p2"><br></p>
+<p class="p1">/* ── HEADER ── */</p>
+<p class="p1">.site-header{</p>
+<p class="p1"><span class="Apple-converted-space">  </span>background:linear-gradient(180deg,#050810,#080b10);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>border-bottom:2px solid var(--accent);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>padding:0 32px; position:sticky; top:0; z-index:200;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>display:flex; align-items:stretch; justify-content:space-between;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>box-shadow:0 4px 40px rgba(240,192,64,0.08);</p>
+<p class="p1">}</p>
+<p class="p1">.header-brand{display:flex;align-items:center;gap:16px;padding:14px 0;}</p>
+<p class="p1">.brand-icon{width:46px;height:46px;background:var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:22px;transform:rotate(-3deg);box-shadow:0 0 20px rgba(240,192,64,0.4);}</p>
+<p class="p1">.brand-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:32px;letter-spacing:3px;text-transform:uppercase;color:#fff;}</p>
+<p class="p1">.brand-title em{color:var(--accent);font-style:normal;}</p>
+<p class="p1">.brand-sub{font-size:10px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-top:3px;}</p>
+<p class="p1">.header-right{display:flex;align-items:center;gap:16px;}</p>
+<p class="p1">.live-badge{display:flex;align-items:center;gap:7px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;color:var(--c-red);text-transform:uppercase;}</p>
+<p class="p1">.live-dot{width:8px;height:8px;border-radius:50%;background:var(--c-red);animation:pulse-dot 1.4s ease-in-out infinite;}</p>
+<p class="p1">@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}</p>
+<p class="p1">.refresh-btn{background:var(--accent);color:#000;border:none;border-radius:4px;padding:10px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s;}</p>
+<p class="p1">.refresh-btn:hover{background:#ffd060;transform:translateY(-1px);}</p>
+<p class="p1">.refresh-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}</p>
+<p class="p1">.spin{animation:spin .9s linear infinite;}</p>
+<p class="p1">@keyframes spin{to{transform:rotate(360deg)}}</p>
+<p class="p1">#last-updated{font-size:12px;color:var(--muted);}</p>
+<p class="p2"><br></p>
+<p class="p1">/* ── TICKER ── */</p>
+<p class="p1">.ticker-bar{background:var(--accent);padding:6px 0;overflow:hidden;white-space:nowrap;}</p>
+<p class="p1">.ticker-inner{display:inline-block;animation:ticker 40s linear infinite;}</p>
+<p class="p1">.ticker-inner span{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;color:#000;text-transform:uppercase;padding:0 28px;}</p>
+<p class="p1">@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}</p>
+<p class="p2"><br></p>
+<p class="p1">/* ── TABS ── */</p>
+<p class="p1">.tab-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;display:flex;gap:0;}</p>
+<p class="p1">.tab-btn{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:14px 22px;border:none;background:transparent;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;margin-bottom:-1px;}</p>
+<p class="p1">.tab-btn:hover{color:var(--text);}</p>
+<p class="p1">.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}</p>
+<p class="p2"><br></p>
+<p class="p1">/* ── CONTROLS ── */</p>
+<p class="p1">.controls-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}</p>
+<p class="p1">.search-wrap{position:relative;}</p>
+<p class="p1">.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}</p>
+<p class="p1">.search-input{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:9px 14px 9px 36px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;width:210px;outline:none;transition:border-color .2s;}</p>
+<p class="p1">.search-input:focus{border-color:var(--accent);}</p>
+<p class="p1">.search-input::placeholder{color:var(--muted);}</p>
+<p class="p1">.ctrl-select{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:9px 14px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;cursor:pointer;outline:none;}</p>
+<p class="p1">.divider{width:1px;height:28px;background:var(--border2);flex-shrink:0;}</p>
+<p class="p1">.ctrl-label{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}</p>
+<p class="p1">.status-pill{margin-left:auto;background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:6px 14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;color:var(--muted);}</p>
+<p class="p1">.status-pill b{color:var(--accent);}</p>
+<p class="p2"><br></p>
+<p class="p1">/* ── TABLE ── */</p>
+<p class="p1">.table-wrap{padding:20px 32px;overflow-x:auto;}</p>
+<p class="p1">table{width:100%;border-collapse:collapse;min-width:700px;}</p>
+<p class="p1">thead tr{background:var(--panel);border-bottom:2px solid var(--border2);}</p>
+<p class="p1">th{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:12px 16px;text-align:left;white-space:nowrap;user-select:none;}</p>
+<p class="p1">tbody tr.team-row{border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}</p>
+<p class="p1">tbody tr.team-row:hover{background:rgba(240,192,64,0.04);}</p>
+<p class="p1">tbody tr.team-row.open{background:rgba(240,192,64,0.06);border-bottom:none;}</p>
+<p class="p1">td{padding:12px 16px;vertical-align:middle;white-space:nowrap;}</p>
+<p class="p1">.team-badge{display:inline-flex;align-items:center;justify-content:center;width:54px;height:28px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:14px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.6);}</p>
+<p class="p1">.stadium-name{font-weight:500;font-size:14px;}</p>
+<p class="p1">.stadium-div{font-size:11px;color:var(--muted);margin-top:1px;}</p>
+<p class="p1">.summary-temp{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;}</p>
+<p class="p1">.no-game{font-size:12px;color:var(--dim);font-style:italic;}</p>
+<p class="p1">.has-game{font-size:13px;font-weight:700;color:var(--accent);font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;}</p>
+<p class="p1">.expand-arrow{font-size:12px;color:var(--muted);transition:transform .25s;display:inline-block;}</p>
+<p class="p1">.open .expand-arrow{transform:rotate(180deg);color:var(--accent);}</p>
+<p class="p1">tr.expand-row{display:none;}</p>
+<p class="p1">tr.expand-row.open{display:table-row;}</p>
+<p class="p1">tr.expand-row td{padding:0;border-bottom:2px solid var(--accent);}</p>
+<p class="p2"><br></p>
+<p class="p1">/* ── EXPAND PANEL ── */</p>
+<p class="p1">.expand-panel{background:var(--surface);padding:20px 24px 24px;border-top:1px solid var(--border2);animation:slideDown .2s ease;}</p>
+<p class="p1">@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}</p>
+<p class="p1">.time-entry{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border2);}</p>
+<p class="p1">.time-entry label{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}</p>
+<p class="p1">.time-input{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:8px 14px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;width:110px;outline:none;text-align:center;transition:border-color .2s;}</p>
+<p class="p1">.time-input:focus{border-color:var(--accent);}</p>
+<p class="p1">.time-input::placeholder{color:var(--dim);font-size:14px;}</p>
+<p class="p1">.set-btn{background:var(--accent);color:#000;border:none;border-radius:4px;padding:8px 18px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .15s;}</p>
+<p class="p1">.set-btn:hover{background:#ffd060;}</p>
+<p class="p1">.clear-btn{background:transparent;color:var(--muted);border:1px solid var(--border2);border-radius:4px;padding:8px 14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;}</p>
+<p class="p1">.clear-btn:hover{border-color:var(--c-red);color:var(--c-red);}</p>
+<p class="p1">.time-hint{font-size:12px;color:var(--dim);}</p>
+<p class="p2"><br></p>
+<p class="p1">/* ── WEATHER WINDOWS ── */</p>
+<p class="p1">.windows-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}</p>
+<p class="p2"><br></p>
+<p class="p1">.window-card{background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:18px 16px;position:relative;transition:border-color .15s;}</p>
+<p class="p1">.window-card.game-time-card{border-color:var(--accent);box-shadow:0 0 20px rgba(240,192,64,0.14);}</p>
+<p class="p1">.window-card.no-data{opacity:0.4;}</p>
+<p class="p2"><br></p>
+<p class="p1">.wc-label{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;color:var(--muted);}</p>
+<p class="p1">.wc-label .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;}</p>
+<p class="p1">.game-time-card .wc-label{color:var(--accent);}</p>
+<p class="p1">.game-time-card .wc-label .dot{background:var(--accent);}</p>
+<p class="p1">.wc-time{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--muted);margin-bottom:14px;}</p>
+<p class="p2"><br></p>
+<p class="p1">/* BIG values inside window cards */</p>
+<p class="p1">.wc-temp{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:42px;line-height:1;margin-bottom:2px;}</p>
+<p class="p1">.wc-feels{font-size:14px;color:var(--muted);margin-bottom:16px;}</p>
+<p class="p2"><br></p>
+<p class="p1">.wc-stat{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border);}</p>
+<p class="p1">.wc-stat:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0;}</p>
+<p class="p1">.wc-stat-l{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;}</p>
+<p class="p1">.wc-stat-v{font-size:18px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;}</p>
+<p class="p1">.wc-stat-sub{font-size:11px;color:var(--muted);text-align:right;margin-top:1px;}</p>
+<p class="p2"><br></p>
+<p class="p1">.wc-wind-bar{background:var(--dim);border-radius:2px;height:4px;margin-top:10px;}</p>
+<p class="p1">.wc-wind-fill{height:4px;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--accent));}</p>
+<p class="p2"><br></p>
+<p class="p1">/* 2026 NOTES / QUICK RULES – bottom of EVERY diagram */</p>
+<p class="p1">.wc-notes{margin-top:18px;padding-top:12px;border-top:1px solid var(--border2);font-size:12.5px;line-height:1.45;color:var(--muted);}</p>
+<p class="p1">.wc-notes-label{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}</p>
+<p class="p2"><br></p>
+<p class="p1">.wc-no-data{font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:1px;color:var(--dim);text-align:center;padding:24px 0;}</p>
+<p class="p1">.no-time-prompt{text-align:center;padding:32px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;color:var(--dim);}</p>
+<p class="p1">.no-time-prompt span{color:var(--accent);}</p>
+<p class="p2"><br></p>
+<p class="p1">/* NEW: Stadium Cheat Sheet row that appears after game time is entered */</p>
+<p class="p1">.cheat-summary{background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:16px;margin-top:24px;}</p>
+<p class="p1">.cheat-summary-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}</p>
+<p class="p1">.cheat-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;font-size:13px;}</p>
+<p class="p1">.cheat-summary-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}</p>
+<p class="p1">.cheat-summary-value{font-weight:700;color:var(--text);}</p>
+<p class="p2"><br></p>
+<p class="p1">/* color classes */</p>
+<p class="p1">.col-red <span class="Apple-converted-space">  </span>{color:var(--c-red)!important;}</p>
+<p class="p1">.col-yellow{color:var(--c-yellow)!important;}</p>
+<p class="p1">.col-dull<span class="Apple-converted-space">  </span>{color:var(--c-dull)!important;}</p>
+<p class="p1">.col-green {color:var(--c-green)!important;}</p>
+<p class="p2"><br></p>
+<p class="p1">/* ── CHEAT SHEET TAB ── */</p>
+<p class="p1">#cheat-view{display:none;padding:24px 32px;}</p>
+<p class="p1">.cheat-search-bar{display:flex;align-items:center;gap:14px;margin-bottom:20px;}</p>
+<p class="p1">.cheat-search{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:9px 16px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;width:240px;outline:none;transition:border-color .2s;}</p>
+<p class="p1">.cheat-search:focus{border-color:var(--accent);}</p>
+<p class="p1">.cheat-search::placeholder{color:var(--muted);}</p>
+<p class="p2"><br></p>
+<p class="p1">.cheat-table-wrap{overflow-x:auto;}</p>
+<p class="p1">.cheat-table{width:100%;border-collapse:collapse;min-width:900px;}</p>
+<p class="p1">.cheat-table thead tr{background:var(--panel);border-bottom:2px solid var(--border2);}</p>
+<p class="p1">.cheat-table th{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:12px 14px;text-align:left;white-space:nowrap;}</p>
+<p class="p1">.cheat-table tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}</p>
+<p class="p1">.cheat-table tbody tr:hover{background:rgba(255,255,255,0.02);}</p>
+<p class="p1">.cheat-table td{padding:11px 14px;font-size:13px;vertical-align:top;}</p>
+<p class="p1">.cheat-table td.notes{white-space:normal;max-width:320px;line-height:1.5;font-size:12px;color:var(--muted);}</p>
+<p class="p1">.wind-friendly{color:var(--c-green);font-weight:600;font-size:12px;}</p>
+<p class="p1">.wind-pitcher{color:var(--c-red);font-weight:600;font-size:12px;}</p>
+<p class="p1">.dim-val{color:var(--muted);}</p>
+<p class="p2"><br></p>
+<p class="p1">/* ── LEGEND ── */</p>
+<p class="p1">.legend-section{margin-bottom:28px;}</p>
+<p class="p1">.legend-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border2);}</p>
+<p class="p1">.legend-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:20px;}</p>
+<p class="p1">.legend-card{background:var(--panel);border:1px solid var(--border2);border-radius:6px;padding:14px 16px;}</p>
+<p class="p1">.legend-card-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;color:var(--text);}</p>
+<p class="p1">.legend-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;}</p>
+<p class="p1">.legend-row:last-child{border-bottom:none;}</p>
+<p class="p1">.legend-swatch{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-right:8px;}</p>
+<p class="p1">.legend-left{display:flex;align-items:center;}</p>
+<p class="p1">.legend-range{color:var(--muted);font-size:12px;}</p>
+<p class="p1">.swatch-red <span class="Apple-converted-space">  </span>{background:var(--c-red);}</p>
+<p class="p1">.swatch-yellow{background:var(--c-yellow);}</p>
+<p class="p1">.swatch-dull<span class="Apple-converted-space">  </span>{background:var(--c-dull);}</p>
+<p class="p1">.swatch-green {background:var(--c-green);}</p>
+<p class="p2"><br></p>
+<p class="p1">/* ── LOADING ── */</p>
+<p class="p1">#overlay{position:fixed;inset:0;background:rgba(8,11,16,0.92);backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:20px;transition:opacity .4s;}</p>
+<p class="p1">#overlay.gone{opacity:0;pointer-events:none;}</p>
+<p class="p1">.ov-ring{width:56px;height:56px;border:4px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .85s linear infinite;}</p>
+<p class="p1">.ov-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;letter-spacing:4px;text-transform:uppercase;}</p>
+<p class="p1">.ov-sub{font-size:13px;color:var(--muted);}</p>
+<p class="p1">.ov-prog{width:280px;height:3px;background:var(--border2);border-radius:2px;overflow:hidden;}</p>
+<p class="p1">.ov-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width .3s;}</p>
+<p class="p1">.empty-row td{text-align:center;padding:60px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:1px;}</p>
+<p class="p2"><br></p>
+<p class="p1">@media(max-width:900px){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.windows-grid{grid-template-columns:1fr 1fr;}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.site-header{padding:0 16px;}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.controls-bar{padding:12px 16px;}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>.table-wrap{padding:12px;}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>#cheat-view{padding:16px;}</p>
+<p class="p1">}</p>
+<p class="p1">&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;div id="overlay"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="ov-ring"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="ov-title"&gt;MLB Weather HQ&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="ov-sub" id="ov-sub"&gt;Ready – click any team to load weather&lt;/div&gt;</p>
+<p class="p1">&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;header class="site-header"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="header-brand"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="brand-icon"&gt;⚾&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="brand-title"&gt;MLB &lt;em&gt;Weather&lt;/em&gt; HQ&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="brand-sub"&gt;Click any team · Enter game time · See 5-window forecast&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="header-right"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="live-badge"&gt;&lt;div class="live-dot"&gt;&lt;/div&gt; Live&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="last-updated"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;button class="refresh-btn" id="refresh-btn" onclick="loadAll()"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;svg id="ref-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"&gt;&lt;path d="M1 4v6h6"/&gt;&lt;path d="M3.51 15a9 9 0 1 0 .49-3"/&gt;&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>Refresh</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p1">&lt;/header&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;div class="ticker-bar"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="ticker-inner"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span&gt;⚾ MLB WEATHER HQ&lt;/span&gt;&lt;span&gt;·&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span&gt;ARI&lt;/span&gt;&lt;span&gt;ATL&lt;/span&gt;&lt;span&gt;BAL&lt;/span&gt;&lt;span&gt;BOS&lt;/span&gt;&lt;span&gt;CHC&lt;/span&gt;&lt;span&gt;CHW&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span&gt;CIN&lt;/span&gt;&lt;span&gt;CLE&lt;/span&gt;&lt;span&gt;COL&lt;/span&gt;&lt;span&gt;DET&lt;/span&gt;&lt;span&gt;HOU&lt;/span&gt;&lt;span&gt;KCR&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span&gt;LAA&lt;/span&gt;&lt;span&gt;LAD&lt;/span&gt;&lt;span&gt;MIA&lt;/span&gt;&lt;span&gt;MIL&lt;/span&gt;&lt;span&gt;MIN&lt;/span&gt;&lt;span&gt;NYM&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span&gt;NYY&lt;/span&gt;&lt;span&gt;ATH&lt;/span&gt;&lt;span&gt;PHI&lt;/span&gt;&lt;span&gt;PIT&lt;/span&gt;&lt;span&gt;SDP&lt;/span&gt;&lt;span&gt;SEA&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span&gt;SFG&lt;/span&gt;&lt;span&gt;STL&lt;/span&gt;&lt;span&gt;TBR&lt;/span&gt;&lt;span&gt;TEX&lt;/span&gt;&lt;span&gt;TOR&lt;/span&gt;&lt;span&gt;WSN&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span&gt;·&lt;/span&gt;&lt;span&gt;⚾ MLB WEATHER HQ&lt;/span&gt;&lt;span&gt;·&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span&gt;ARI&lt;/span&gt;&lt;span&gt;ATL&lt;/span&gt;&lt;span&gt;BAL&lt;/span&gt;&lt;span&gt;BOS&lt;/span&gt;&lt;span&gt;CHC&lt;/span&gt;&lt;span&gt;CHW&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span&gt;CIN&lt;/span&gt;&lt;span&gt;CLE&lt;/span&gt;&lt;span&gt;COL&lt;/span&gt;&lt;span&gt;DET&lt;/span&gt;&lt;span&gt;HOU&lt;/span&gt;&lt;span&gt;KCR&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span&gt;LAA&lt;/span&gt;&lt;span&gt;LAD&lt;/span&gt;&lt;span&gt;MIA&lt;/span&gt;&lt;span&gt;MIL&lt;/span&gt;&lt;span&gt;MIN&lt;/span&gt;&lt;span&gt;NYM&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span&gt;NYY&lt;/span&gt;&lt;span&gt;ATH&lt;/span&gt;&lt;span&gt;PHI&lt;/span&gt;&lt;span&gt;PIT&lt;/span&gt;&lt;span&gt;SDP&lt;/span&gt;&lt;span&gt;SEA&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span&gt;SFG&lt;/span&gt;&lt;span&gt;STL&lt;/span&gt;&lt;span&gt;TBR&lt;/span&gt;&lt;span&gt;TEX&lt;/span&gt;&lt;span&gt;TOR&lt;/span&gt;&lt;span&gt;WSN&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p1">&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;!-- TABS --&gt;</p>
+<p class="p1">&lt;div class="tab-bar"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;button class="tab-btn active" id="tab-weather" onclick="switchTab('weather')"&gt;⛅ Weather Dashboard&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;button class="tab-btn" id="tab-cheat" onclick="switchTab('cheat')"&gt;🏟️ Stadium Cheat Sheet&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;button class="tab-btn" id="tab-legend" onclick="switchTab('legend')"&gt;🎨 Color Legend&lt;/button&gt;</p>
+<p class="p1">&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;!-- WEATHER VIEW --&gt;</p>
+<p class="p1">&lt;div id="weather-view"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="controls-bar"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="search-wrap"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"&gt;&lt;circle cx="11" cy="11" r="8"/&gt;&lt;path d="m21 21-4.35-4.35"/&gt;&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;input class="search-input" id="search" type="text" placeholder="Search team or stadium…" oninput="renderTable()"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="divider"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span class="ctrl-label"&gt;Division&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;select class="ctrl-select" id="div-filter" onchange="renderTable()"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;option value="all"&gt;All Teams&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;option value="AL East"&gt;AL East&lt;/option&gt;&lt;option value="AL Central"&gt;AL Central&lt;/option&gt;&lt;option value="AL West"&gt;AL West&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;option value="NL East"&gt;NL East&lt;/option&gt;&lt;option value="NL Central"&gt;NL Central&lt;/option&gt;&lt;option value="NL West"&gt;NL West&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="divider"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;span class="ctrl-label"&gt;Sort&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;select class="ctrl-select" id="sort" onchange="renderTable()"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;option value="alpha"&gt;Team A–Z&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;option value="game"&gt;Game Time&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="status-pill" id="status-pill"&gt;&lt;b&gt;30&lt;/b&gt; stadiums&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="table-wrap"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;table id="main-table"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;thead&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;tr&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;th&gt;Team&lt;/th&gt;&lt;th&gt;Stadium&lt;/th&gt;&lt;th&gt;Game Time&lt;/th&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;th&gt;Curr Temp&lt;/th&gt;&lt;th&gt;Wind&lt;/th&gt;&lt;th&gt;Rain %&lt;/th&gt;&lt;th&gt;&lt;/th&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/tr&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/thead&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;tbody id="tbody"&gt;&lt;/tbody&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/table&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p1">&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;!-- CHEAT SHEET VIEW --&gt;</p>
+<p class="p1">&lt;div id="cheat-view"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="cheat-search-bar"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="search-wrap"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"&gt;&lt;circle cx="11" cy="11" r="8"/&gt;&lt;path d="m21 21-4.35-4.35"/&gt;&lt;/svg&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;input class="cheat-search search-input" id="cheat-search" type="text" placeholder="Search team or stadium…" oninput="renderCheat()"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="cheat-table-wrap"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;table class="cheat-table"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;thead&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;tr&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;th&gt;Team&lt;/th&gt;&lt;th&gt;Stadium&lt;/th&gt;&lt;th&gt;LF&lt;/th&gt;&lt;th&gt;CF&lt;/th&gt;&lt;th&gt;RF&lt;/th&gt;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>&lt;th&gt;LF Wall&lt;/th&gt;&lt;th&gt;RF Wall&lt;/th&gt;&lt;th&gt;Hitter Winds&lt;/th&gt;&lt;th&gt;Pitcher Winds&lt;/th&gt;&lt;th&gt;2026 Notes&lt;/th&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/tr&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/thead&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;tbody id="cheat-tbody"&gt;&lt;/tbody&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/table&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p1">&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;!-- LEGEND VIEW --&gt;</p>
+<p class="p1">&lt;div id="legend-view" style="display:none;padding:24px 32px;"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="legend-section"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="legend-title"&gt;How to read the color codes&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="legend-grid"&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="legend-card"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-card-title"&gt;🌡️ Temperature (°F)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-red"&gt;&lt;/div&gt;&lt;span class="col-red"&gt;Hot / Cold Extreme&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;≥ 95°F or ≤ 40°F&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-yellow"&gt;&lt;/div&gt;&lt;span class="col-yellow"&gt;Warm&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;85–94°F&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-green"&gt;&lt;/div&gt;&lt;span class="col-green"&gt;Comfortable&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;41–84°F&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="legend-card"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-card-title"&gt;💧 Humidity (%)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-red"&gt;&lt;/div&gt;&lt;span class="col-red"&gt;Very Dry&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;&amp;lt; 50%&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-yellow"&gt;&lt;/div&gt;&lt;span class="col-yellow"&gt;Moderate&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;50–60%&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-dull"&gt;&lt;/div&gt;&lt;span class="col-dull"&gt;Good&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;60–70%&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-green"&gt;&lt;/div&gt;&lt;span class="col-green"&gt;Ideal&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;&amp;gt; 70%&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="legend-card"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-card-title"&gt;🔵 Pressure (hPa)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-red"&gt;&lt;/div&gt;&lt;span class="col-red"&gt;High Pressure&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;&amp;gt; 1020 hPa&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-yellow"&gt;&lt;/div&gt;&lt;span class="col-yellow"&gt;Slightly High&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;1015–1020 hPa&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-dull"&gt;&lt;/div&gt;&lt;span class="col-dull"&gt;Normal&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;1010–1015 hPa&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-green"&gt;&lt;/div&gt;&lt;span class="col-green"&gt;Low Pressure&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;&amp;lt; 1010 hPa&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="legend-card"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-card-title"&gt;💨 Wind Speed (mph)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-red"&gt;&lt;/div&gt;&lt;span class="col-red"&gt;Calm / No Carry&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;≤ 5.9 mph&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-yellow"&gt;&lt;/div&gt;&lt;span class="col-yellow"&gt;Light&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;6–12.9 mph&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-dull"&gt;&lt;/div&gt;&lt;span class="col-dull"&gt;Moderate&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;13–19.9 mph&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-green"&gt;&lt;/div&gt;&lt;span class="col-green"&gt;Strong Carry&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;≥ 20 mph&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="legend-card"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-card-title"&gt;💨 Wind Gusts (mph)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-red"&gt;&lt;/div&gt;&lt;span class="col-red"&gt;Minimal Gusts&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;≤ 10.9 mph&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-yellow"&gt;&lt;/div&gt;&lt;span class="col-yellow"&gt;Light Gusts&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;11–18.9 mph&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-dull"&gt;&lt;/div&gt;&lt;span class="col-dull"&gt;Moderate Gusts&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;19–25 mph&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-green"&gt;&lt;/div&gt;&lt;span class="col-green"&gt;Strong Gusts&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;≥ 25.1 mph&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="legend-card"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-card-title"&gt;🌧️ Rain Probability (%)&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-green"&gt;&lt;/div&gt;&lt;span class="col-green"&gt;Clear&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;&amp;lt; 20%&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-yellow"&gt;&lt;/div&gt;&lt;span class="col-yellow"&gt;Possible&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;20–39%&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-red"&gt;&lt;/div&gt;&lt;span class="col-red"&gt;Likely&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;40–69%&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="legend-row"&gt;&lt;div class="legend-left"&gt;&lt;div class="legend-swatch swatch-red"&gt;&lt;/div&gt;&lt;span class="col-red"&gt;Rain Game&lt;/span&gt;&lt;/div&gt;&lt;span class="legend-range"&gt;≥ 70%&lt;/span&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p1">&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;script&gt;</p>
+<p class="p1">// ── TEAM DATA ────────────────────────────────────────────────────────────────</p>
+<p class="p1">const TEAMS=[</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'ARI',stadium:'Chase Field',lat:33.4454,lon:-112.0667,color:'#A71930',division:'NL West'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'ATL',stadium:'Truist Park',lat:33.8908,lon:-84.4682,color:'#CE1141',division:'NL East'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'BAL',stadium:'Oriole Park at Camden Yards',lat:39.2852,lon:-76.6201,color:'#DF4601',division:'AL East'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'BOS',stadium:'Fenway Park',lat:42.3466,lon:-71.0988,color:'#BD3039',division:'AL East'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'CHC',stadium:'Wrigley Field',lat:41.9484,lon:-87.6553,color:'#0E3386',division:'NL Central'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'CHW',stadium:'Guaranteed Rate Field',lat:41.8309,lon:-87.6351,color:'#27251F',division:'AL Central'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'CIN',stadium:'Great American Ball Park',lat:39.1072,lon:-84.5077,color:'#C6011F',division:'NL Central'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'CLE',stadium:'Progressive Field',lat:41.4951,lon:-81.6871,color:'#00385D',division:'AL Central'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'COL',stadium:'Coors Field',lat:39.756,lon:-104.9942,color:'#33006F',division:'NL West'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'DET',stadium:'Comerica Park',lat:42.3392,lon:-83.0488,color:'#0C2340',division:'AL Central'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'HOU',stadium:'Daikin Park',lat:29.7573,lon:-95.3556,color:'#002D62',division:'AL West'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'KCR',stadium:'Kauffman Stadium',lat:39.1022,lon:-94.5836,color:'#004687',division:'AL Central'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'LAA',stadium:'Angel Stadium',lat:33.8003,lon:-117.8827,color:'#BA0021',division:'AL West'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'LAD',stadium:'Dodger Stadium',lat:34.0736,lon:-118.2399,color:'#005A9C',division:'NL West'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'MIA',stadium:'loanDepot park',lat:25.7781,lon:-80.2196,color:'#00A3E0',division:'NL East'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'MIL',stadium:'American Family Field',lat:43.0281,lon:-87.9706,color:'#12284B',division:'NL Central'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'MIN',stadium:'Target Field',lat:44.9817,lon:-93.2785,color:'#002B5C',division:'AL Central'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'NYM',stadium:'Citi Field',lat:40.7571,lon:-73.8458,color:'#002D72',division:'NL East'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'NYY',stadium:'Yankee Stadium',lat:40.8296,lon:-73.9262,color:'#1D2D5B',division:'AL East'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'ATH',stadium:'Sutter Health Park',lat:38.5804,lon:-121.5138,color:'#006400',division:'AL West'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'PHI',stadium:'Citizens Bank Park',lat:39.9061,lon:-75.1665,color:'#E81828',division:'NL East'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'PIT',stadium:'PNC Park',lat:40.4615,lon:-80.0089,color:'#FDB827',division:'NL Central'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'SDP',stadium:'Petco Park',lat:32.7521,lon:-117.1436,color:'#2F241D',division:'NL West'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'SEA',stadium:'T-Mobile Park',lat:47.5915,lon:-122.3329,color:'#0C2C56',division:'AL West'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'SFG',stadium:'Oracle Park',lat:37.7799,lon:-122.3893,color:'#FD5A1E',division:'NL West'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'STL',stadium:'Busch Stadium',lat:38.6226,lon:-90.1928,color:'#C41E3A',division:'NL Central'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'TBR',stadium:'Tropicana Field',lat:27.7685,lon:-82.6482,color:'#092C5C',division:'AL East'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'TEX',stadium:'Globe Life Field',lat:32.7475,lon:-97.0842,color:'#003278',division:'AL West'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'TOR',stadium:'Rogers Centre',lat:43.6417,lon:-79.3892,color:'#134A8E',division:'AL East'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{abbr:'WSN',stadium:'Nationals Park',lat:38.8728,lon:-77.0075,color:'#AB0003',division:'NL East'},</p>
+<p class="p1">];</p>
+<p class="p2"><br></p>
+<p class="p1">// ── CHEAT SHEET DATA ─────────────────────────────────────────────────────────</p>
+<p class="p1">const CHEAT=[</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'ARI',stadium:'Chase Field',lf:330,cf:407,rf:335,lfWall:'25',rfWall:'8',hitter:'S, SW, SE',pitcher:'N, NE',notes:'Roof open = S wind = biggest HR boost'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'ATL',stadium:'Truist Park',lf:335,cf:400,rf:325,lfWall:'25',rfWall:'25',hitter:'S, SW',pitcher:'N, NE',notes:'South wind = strongest offensive boost'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'BAL',stadium:'Oriole Park at Camden Yards',lf:333,cf:410,rf:318,lfWall:'7',rfWall:'7',hitter:'S, SW',pitcher:'N, NE',notes:'Short RF porch; S wind boosts HR'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'BOS',stadium:'Fenway Park',lf:310,cf:420,rf:302,lfWall:'37 (Monster)',rfWall:'5–15',hitter:'S, SW',pitcher:'N, NE',notes:'Green Monster still dominates'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'CHC',stadium:'Wrigley Field',lf:355,cf:400,rf:353,lfWall:'15–20',rfWall:'15–20',hitter:'S, SW',pitcher:'N, NE',notes:'Classic "wind blowing out" park'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'CHW',stadium:'Guaranteed Rate Field',lf:330,cf:400,rf:335,lfWall:'8–15',rfWall:'8–15',hitter:'S, SW',pitcher:'N, NE',notes:'Standard open-air park'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'CIN',stadium:'Great American Ball Park',lf:328,cf:404,rf:325,lfWall:'12',rfWall:'12',hitter:'S, SW',pitcher:'N, NE',notes:'Very hitter-friendly when wind out'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'CLE',stadium:'Progressive Field',lf:325,cf:405,rf:325,lfWall:'19',rfWall:'19',hitter:'S, SW',pitcher:'N, NE',notes:'Symmetric but deep CF'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'COL',stadium:'Coors Field',lf:347,cf:415,rf:350,lfWall:'8–25',rfWall:'8–25',hitter:'Any wind (altitude)',pitcher:'Almost never',notes:'Altitude = permanent hitter boost'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'DET',stadium:'Comerica Park',lf:345,cf:420,rf:330,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'One of deepest CF in MLB'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'HOU',stadium:'Daikin Park',lf:315,cf:435,rf:326,lfWall:'21–90 (train)',rfWall:'21–90',hitter:'S, SW',pitcher:'N, NE',notes:'Tall LF wall; roof usually closed'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'KCR',stadium:'Kauffman Stadium (2026)',lf:347,cf:410,rf:344,lfWall:'8.5',rfWall:'8.5',hitter:'S, SW (much more now)',pitcher:'N, NE',notes:'New 2026: fences in 9–10 ft; walls lowered to 8.5 ft; now much more HR-friendly'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'LAA',stadium:'Angel Stadium',lf:330,cf:396,rf:330,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Very symmetric'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'LAD',stadium:'Dodger Stadium',lf:330,cf:400,rf:330,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Nearly symmetric'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'MIA',stadium:'loanDepot Park',lf:340,cf:420,rf:335,lfWall:'8–14',rfWall:'8–14',hitter:'S, SW (roof often closed)',pitcher:'N, NE',notes:'Deep CF; roof usually closed'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'MIL',stadium:'American Family Field',lf:332,cf:400,rf:325,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Retractable roof'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'MIN',stadium:'Target Field',lf:339,cf:404,rf:328,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Open-air, lake breezes common'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'NYM',stadium:'Citi Field',lf:335,cf:405,rf:330,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Standard modern park'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'NYY',stadium:'Yankee Stadium',lf:318,cf:408,rf:314,lfWall:'8',rfWall:'8',hitter:'S, SW (huge RF boost)',pitcher:'N, NE',notes:'Short RF porch'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'ATH',stadium:'Sutter Health Park (temp)',lf:330,cf:403,rf:325,lfWall:'8–12',rfWall:'8–12',hitter:'S, SW',pitcher:'N, NE',notes:'2026 temp home – minor-league dimensions'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'PHI',stadium:'Citizens Bank Park',lf:330,cf:401,rf:329,lfWall:'8–13',rfWall:'8–13',hitter:'S, SW',pitcher:'N, NE',notes:'No dimension changes 2026; hosting MLB All-Star Game'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'PIT',stadium:'PNC Park',lf:325,cf:399,rf:320,lfWall:'21 (Clemente)',rfWall:'21',hitter:'S, SW',pitcher:'N, NE',notes:'Beautiful river park'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'SDP',stadium:'Petco Park',lf:336,cf:396,rf:322,lfWall:'8–11',rfWall:'8–11',hitter:'S, SW (marine layer)',pitcher:'N, NE',notes:'Deep gaps'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'SEA',stadium:'T-Mobile Park',lf:331,cf:405,rf:327,lfWall:'8',rfWall:'8',hitter:'S, SW (when roof open)',pitcher:'N, NE',notes:'Retractable roof + marine air'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'SFG',stadium:'Oracle Park',lf:339,cf:399,rf:309,lfWall:'8–25',rfWall:'8–25',hitter:'S, SW (bay wind often blows in)',pitcher:'N, NE',notes:'Short RF porch + bay wind'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'STL',stadium:'Busch Stadium',lf:336,cf:400,rf:335,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Standard'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'TBR',stadium:'Tropicana Field (2026)',lf:315,cf:404,rf:322,lfWall:'8–15',rfWall:'8–15',hitter:'S, SW (when roof open)',pitcher:'N, NE',notes:'Dome – roof usually closed'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'TEX',stadium:'Globe Life Field',lf:329,cf:407,rf:326,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Retractable roof'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'TOR',stadium:'Rogers Centre',lf:328,cf:400,rf:328,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Symmetric retractable roof'},</p>
+<p class="p1"><span class="Apple-converted-space">  </span>{team:'WSN',stadium:'Nationals Park',lf:336,cf:403,rf:335,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Standard'},</p>
+<p class="p1">];</p>
+<p class="p2"><br></p>
+<p class="p1">// ── STATE ────────────────────────────────────────────────────────────────────</p>
+<p class="p1">let allData={}, gameTimes={}, openTeam=null;</p>
+<p class="p2"><br></p>
+<p class="p1">// ── COLOR RULES (unchanged) ──────────────────────────────────────────────────</p>
+<p class="p1">function colTemp(t){if(t&gt;=95||t&lt;=40)return'col-red';if(t&gt;=85)return'col-yellow';return'col-green';}</p>
+<p class="p1">function colHumid(h){if(h&lt;50)return'col-red';if(h&lt;=60)return'col-yellow';if(h&lt;=70)return'col-dull';return'col-green';}</p>
+<p class="p1">function colPressure(p){if(p&gt;1020)return'col-red';if(p&gt;=1015)return'col-yellow';if(p&gt;=1010)return'col-dull';return'col-green';}</p>
+<p class="p1">function colWind(s){if(s&lt;=5.9)return'col-red';if(s&lt;=12.9)return'col-yellow';if(s&lt;=19.9)return'col-dull';return'col-green';}</p>
+<p class="p1">function colGusts(g){if(g&lt;=10.9)return'col-red';if(g&lt;=18.9)return'col-yellow';if(g&lt;=25)return'col-dull';return'col-green';}</p>
+<p class="p1">function colPrecip(p){if(p&lt;20)return'col-green';if(p&lt;40)return'col-yellow';return'col-red';}</p>
+<p class="p1">function tCol(t){return t&gt;=95||t&lt;=40?'col-red':t&gt;=85?'col-yellow':'col-green';}</p>
+<p class="p1">function wColRow(s){return s&lt;=5.9?'col-red':s&lt;=12.9?'col-yellow':s&lt;=19.9?'col-dull':'col-green';}</p>
+<p class="p1">function pColRow(p){return p&lt;20?'col-green':p&lt;40?'col-yellow':'col-red';}</p>
+<p class="p2"><br></p>
+<p class="p1">const cardinal=d=&gt;['N','NE','E','SE','S','SW','W','NW'][Math.round(d/45)%8];</p>
+<p class="p2"><br></p>
+<p class="p1">// ── LAZY FETCH PATCH (only load weather when team is opened) ─────────────────</p>
+<p class="p1">async function fetchTeamData(abbr){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(allData[abbr] &amp;&amp; !allData[abbr].err) return;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const team=TEAMS.find(t=&gt;t.abbr===abbr);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!team) return;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const url=`https://api.open-meteo.com/v1/forecast?latitude=${team.lat}&amp;longitude=${team.lon}`</p>
+<p class="p1"><span class="Apple-converted-space">    </span>+`&amp;hourly=temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m,`</p>
+<p class="p1"><span class="Apple-converted-space">    </span>+`wind_direction_10m,wind_gusts_10m,apparent_temperature,precipitation_probability,precipitation`</p>
+<p class="p1"><span class="Apple-converted-space">    </span>+`&amp;timezone=auto&amp;forecast_days=1&amp;wind_speed_unit=mph&amp;temperature_unit=fahrenheit`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>try{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const json=await fetch(url).then(r=&gt;r.json());</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const h=json.hourly; const hours=[];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>for(let i=0;i&lt;h.time.length;i++){</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const t=new Date(h.time[i]);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if(t.getHours()&lt;6) continue;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>hours.push({</p>
+<p class="p1"><span class="Apple-converted-space">        </span>time:t, temp:Math.round(h.temperature_2m[i]), feels:Math.round(h.apparent_temperature[i]),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>humid:h.relative_humidity_2m[i], pressure:Math.round(h.surface_pressure[i]),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>wSpeed:Math.round(h.wind_speed_10m[i]), wDir:h.wind_direction_10m[i],</p>
+<p class="p1"><span class="Apple-converted-space">        </span>wCard:cardinal(h.wind_direction_10m[i]), gusts:Math.round(h.wind_gusts_10m[i]),</p>
+<p class="p1"><span class="Apple-converted-space">        </span>pPct:h.precipitation_probability[i], pIn:h.precipitation[i],</p>
+<p class="p1"><span class="Apple-converted-space">      </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>allData[abbr]={abbr,hours,err:false};</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}catch{allData[abbr]={abbr,hours:[],err:true};}</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">// ── 2026 NOTES HELPER ────────────────────────────────────────────────────────</p>
+<p class="p1">function getNotes(abbr){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const entry=CHEAT.find(c=&gt;c.team===abbr);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return entry?entry.notes:'No 2026 notes available';</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">// ── STADIUM CHEAT SHEET ROW (appears after game time) ────────────────────────</p>
+<p class="p1">function buildStadiumCheatSummary(abbr){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const row=CHEAT.find(r=&gt;r.team===abbr);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!row) return '';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return `&lt;div class="cheat-summary"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="cheat-summary-title"&gt;🏟️ STADIUM CHEAT SHEET — ${row.stadium}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="cheat-summary-grid"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div&gt;&lt;div class="cheat-summary-label"&gt;LF&lt;/div&gt;&lt;div class="cheat-summary-value"&gt;${row.lf} ft&lt;/div&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div&gt;&lt;div class="cheat-summary-label"&gt;CF&lt;/div&gt;&lt;div class="cheat-summary-value"&gt;${row.cf} ft&lt;/div&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div&gt;&lt;div class="cheat-summary-label"&gt;RF&lt;/div&gt;&lt;div class="cheat-summary-value"&gt;${row.rf} ft&lt;/div&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div&gt;&lt;div class="cheat-summary-label"&gt;LF Wall&lt;/div&gt;&lt;div class="cheat-summary-value"&gt;${row.lfWall} ft&lt;/div&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div&gt;&lt;div class="cheat-summary-label"&gt;RF Wall&lt;/div&gt;&lt;div class="cheat-summary-value"&gt;${row.rfWall} ft&lt;/div&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div&gt;&lt;div class="cheat-summary-label"&gt;Hitter-Friendly Winds&lt;/div&gt;&lt;div class="cheat-summary-value"&gt;${row.hitter}&lt;/div&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div&gt;&lt;div class="cheat-summary-label"&gt;Pitcher-Friendly Winds&lt;/div&gt;&lt;div class="cheat-summary-value"&gt;${row.pitcher}&lt;/div&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border2);"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="cheat-summary-label"&gt;2026 NOTES / QUICK RULES&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="color:var(--text);line-height:1.5;"&gt;${row.notes}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;`;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">// ── WINDOW CARD (2026 notes at bottom of each diagram) ───────────────────────</p>
+<p class="p1">function buildWindowCard(abbr,offsetMins,label,isGame){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const gt=gameTimes[abbr];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const parsed=parseGameTime(gt);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(parsed==null) return '';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const targetMins=parsed+offsetMins;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const h=getHourData(abbr,targetMins);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const timeLabel=minToLabel(targetMins);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const gc=isGame?'game-time-card':'';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!h) return `&lt;div class="window-card ${gc} no-data"&gt;&lt;div class="wc-label"&gt;&lt;div class="dot"&gt;&lt;/div&gt;${label}&lt;/div&gt;&lt;div class="wc-time"&gt;${timeLabel}&lt;/div&gt;&lt;div class="wc-no-data"&gt;No data for this window&lt;/div&gt;&lt;/div&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const windPct=Math.min((h.wSpeed/35)*100,100);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return `&lt;div class="window-card ${gc}"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="wc-label"&gt;&lt;div class="dot"&gt;&lt;/div&gt;${label}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="wc-time"&gt;${timeLabel}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="wc-temp ${colTemp(h.temp)}"&gt;${h.temp}°F&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="wc-feels"&gt;Feels like ${h.feels}°F&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="wc-stat"&gt;&lt;span class="wc-stat-l"&gt;Humidity&lt;/span&gt;&lt;div style="text-align:right"&gt;&lt;div class="wc-stat-v ${colHumid(h.humid)}"&gt;${h.humid}%&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="wc-stat"&gt;&lt;span class="wc-stat-l"&gt;Pressure&lt;/span&gt;&lt;div style="text-align:right"&gt;&lt;div class="wc-stat-v ${colPressure(h.pressure)}"&gt;${h.pressure} &lt;span style="font-size:13px;font-weight:400"&gt;hPa&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="wc-stat"&gt;&lt;span class="wc-stat-l"&gt;Wind&lt;/span&gt;&lt;div style="text-align:right"&gt;&lt;div class="wc-stat-v ${colWind(h.wSpeed)}"&gt;${h.wSpeed} mph&lt;/div&gt;&lt;div class="wc-stat-sub"&gt;${h.wCard} · ${h.wDir}°&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="wc-stat"&gt;&lt;span class="wc-stat-l"&gt;Gusts&lt;/span&gt;&lt;div style="text-align:right"&gt;&lt;div class="wc-stat-v ${colGusts(h.gusts)}"&gt;${h.gusts} mph&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="wc-stat"&gt;&lt;span class="wc-stat-l"&gt;Rain %&lt;/span&gt;&lt;div style="text-align:right"&gt;&lt;div class="wc-stat-v ${colPrecip(h.pPct)}"&gt;${h.pPct}%&lt;/div&gt;&lt;div class="wc-stat-sub"&gt;${h.pIn}" precip&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="wc-wind-bar"&gt;&lt;div class="wc-wind-fill" style="width:${windPct}%"&gt;&lt;/div&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="wc-notes"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="wc-notes-label"&gt;2026 NOTES / QUICK RULES&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>${getNotes(abbr)}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;`;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">function buildExpandPanel(abbr){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const gt=gameTimes[abbr]||'';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const parsed=parseGameTime(gt);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const hasTime=parsed!=null;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const windows=hasTime?`&lt;div class="windows-grid"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>${buildWindowCard(abbr,-60,'1H Before',false)}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>${buildWindowCard(abbr,0,'First Pitch',true)}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>${buildWindowCard(abbr,60,'+1 Hour',false)}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>${buildWindowCard(abbr,120,'+2 Hours',false)}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>${buildWindowCard(abbr,180,'+3 Hours',false)}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;`:`&lt;div class="no-time-prompt"&gt;Enter a game time above to see the &lt;span&gt;5-window forecast&lt;/span&gt;&lt;/div&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const cheatSection = hasTime ? buildStadiumCheatSummary(abbr) : '';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>return `&lt;div class="expand-panel"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="time-entry"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;label&gt;⏱ Game Time&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;input class="time-input" id="ti-${abbr}" type="text" placeholder="7:05 PM" value="${gt}"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>onkeydown="if(event.key==='Enter')setTime('${abbr}')"</p>
+<p class="p1"><span class="Apple-converted-space">        </span>oninput="liveUpdate('${abbr}')"/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;button class="set-btn" onclick="setTime('${abbr}')"&gt;Set&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>${gt?`&lt;button class="clear-btn" onclick="clearTime('${abbr}')"&gt;Clear&lt;/button&gt;`:''}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;span class="time-hint"&gt;e.g. 7:05 PM · 1:10 PM · 13:10&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="windows-${abbr}"&gt;${windows}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>${cheatSection}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;`;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">// ── TIME PARSING (unchanged) ─────────────────────────────────────────────────</p>
+<p class="p1">function parseGameTime(str){if(!str)return null;str=str.trim().toUpperCase();let h,m=0,isPM=str.includes('PM'),isAM=str.includes('AM');str=str.replace(/[APM\s]/g,'');if(str.includes(':'))[h,m]=str.split(':').map(Number);else if(str.length&lt;=2)h=Number(str);else{h=Number(str.slice(0,-2));m=Number(str.slice(-2));}if(isNaN(h))return null;if(isPM&amp;&amp;h&lt;12)h+=12;if(isAM&amp;&amp;h===12)h=0;if(!isPM&amp;&amp;!isAM&amp;&amp;h&lt;10)h+=12;return h*60+m;}</p>
+<p class="p1">function minToLabel(mins){if(mins==null)return'—';let h=Math.floor(mins/60)%24,m=mins%60;const ap=h&gt;=12?'PM':'AM';const d=h&gt;12?h-12:(h===0?12:h);return`${d}:${String(m).padStart(2,'0')} ${ap}`;}</p>
+<p class="p1">function getHourData(abbr,targetMins){const d=allData[abbr];if(!d||d.err||!d.hours.length)return null;const th=Math.floor(targetMins/60);return d.hours.find(h=&gt;h.time.getHours()===th)||null;}</p>
+<p class="p2"><br></p>
+<p class="p1">// ── TABLE RENDER (unchanged) ─────────────────────────────────────────────────</p>
+<p class="p1">function renderTable(){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const q=document.getElementById('search').value.toLowerCase().trim();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const divF=document.getElementById('div-filter').value;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const sortK=document.getElementById('sort').value;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>let data=TEAMS.filter(t=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const mQ=!q||t.abbr.toLowerCase().includes(q)||t.stadium.toLowerCase().includes(q);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const mD=divF==='all'||t.division===divF;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return mQ&amp;&amp;mD;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(sortK==='game') data.sort((a,b)=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const ga=parseGameTime(gameTimes[a.abbr])??9999;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const gb=parseGameTime(gameTimes[b.abbr])??9999;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return ga-gb||a.abbr.localeCompare(b.abbr);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}); else data.sort((a,b)=&gt;a.abbr.localeCompare(b.abbr));</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('status-pill').innerHTML=`&lt;b&gt;${data.length}&lt;/b&gt; stadiums`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!data.length){document.getElementById('tbody').innerHTML=`&lt;tr class="empty-row"&gt;&lt;td colspan="7"&gt;No stadiums match&lt;/td&gt;&lt;/tr&gt;`;return;}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('tbody').innerHTML=data.map((t,idx)=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const d=allData[t.abbr];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const now=d?.hours?.find(h=&gt;h.time.getHours()===new Date().getHours())||d?.hours?.[0];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const gt=gameTimes[t.abbr];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const isOpen=openTeam===t.abbr;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const badge=`&lt;span class="team-badge" style="background:${t.color}"&gt;${t.abbr}&lt;/span&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const tempStr=now?`&lt;span class="summary-temp ${tCol(now.temp)}"&gt;${now.temp}°F&lt;/span&gt;`:'&lt;span style="color:var(--muted)"&gt;—&lt;/span&gt;';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const windStr=now?`&lt;span style="font-weight:600" class="${wColRow(now.wSpeed)}"&gt;${now.wSpeed} mph ${now.wCard}&lt;/span&gt;`:'—';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const precipStr=now?`&lt;span style="font-weight:600" class="${pColRow(now.pPct)}"&gt;${now.pPct}%&lt;/span&gt;`:'—';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const gtStr=gt?`&lt;span class="has-game"&gt;⚾ ${gt.toUpperCase()}&lt;/span&gt;`:`&lt;span class="no-game"&gt;no game set&lt;/span&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return `</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;tr class="team-row${isOpen?' open':''}" id="tr-${t.abbr}" style="animation-delay:${idx*.02}s" onclick="toggleTeam('${t.abbr}')"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;td&gt;${badge}&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;td&gt;&lt;div class="stadium-name"&gt;${t.stadium}&lt;/div&gt;&lt;div class="stadium-div"&gt;${t.division}&lt;/div&gt;&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;td&gt;${gtStr}&lt;/td&gt;&lt;td&gt;${tempStr}&lt;/td&gt;&lt;td&gt;${windStr}&lt;/td&gt;&lt;td&gt;${precipStr}&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;td&gt;&lt;span class="expand-arrow"&gt;▼&lt;/span&gt;&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/tr&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;tr class="expand-row${isOpen?' open':''}" id="er-${t.abbr}"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;td colspan="7"&gt;${isOpen?buildExpandPanel(t.abbr):''}&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/tr&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}).join('');</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">// ── CHEAT SHEET RENDER (unchanged) ───────────────────────────────────────────</p>
+<p class="p1">function renderCheat(){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const q=document.getElementById('cheat-search').value.toLowerCase().trim();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const data=CHEAT.filter(r=&gt;!q||r.team.toLowerCase().includes(q)||r.stadium.toLowerCase().includes(q));</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const teamMap=Object.fromEntries(TEAMS.map(t=&gt;[t.abbr,t.color]));</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('cheat-tbody').innerHTML=data.map(r=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const color=teamMap[r.team]||'#333';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const badge=`&lt;span class="team-badge" style="background:${color}"&gt;${r.team}&lt;/span&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>return `&lt;tr&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;td&gt;${badge}&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;td&gt;&lt;div class="stadium-name" style="font-size:13px"&gt;${r.stadium}&lt;/div&gt;&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;td class="dim-val"&gt;${r.lf}&lt;/td&gt;&lt;td class="dim-val"&gt;${r.cf}&lt;/td&gt;&lt;td class="dim-val"&gt;${r.rf}&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;td class="dim-val"&gt;${r.lfWall}&lt;/td&gt;&lt;td class="dim-val"&gt;${r.rfWall}&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;td&gt;&lt;span class="wind-friendly"&gt;${r.hitter}&lt;/span&gt;&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;td&gt;&lt;span class="wind-pitcher"&gt;${r.pitcher}&lt;/span&gt;&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;td class="notes"&gt;${r.notes}&lt;/td&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/tr&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}).join('');</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">// ── INTERACTIONS (toggle now uses lazy fetch) ────────────────────────────────</p>
+<p class="p1">function toggleTeam(abbr){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>openTeam=openTeam===abbr?null:abbr;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(openTeam) fetchTeamData(abbr); <span class="Apple-converted-space">  </span>// ← LAZY LOADING PATCH (fixes GitHub stuck loading)</p>
+<p class="p1"><span class="Apple-converted-space">  </span>renderTable();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(openTeam) setTimeout(()=&gt;{document.getElementById(`tr-${abbr}`)?.scrollIntoView({behavior:'smooth',block:'nearest'});},50);</p>
+<p class="p1">}</p>
+<p class="p1">function setTime(abbr){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const val=document.getElementById(`ti-${abbr}`)?.value?.trim();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(val) gameTimes[abbr]=val; else delete gameTimes[abbr];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const cell=document.querySelector(`#er-${abbr} td`);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(cell) cell.innerHTML=buildExpandPanel(abbr);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>updateRowGT(abbr);</p>
+<p class="p1">}</p>
+<p class="p1">function clearTime(abbr){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>delete gameTimes[abbr];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const cell=document.querySelector(`#er-${abbr} td`);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(cell) cell.innerHTML=buildExpandPanel(abbr);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>updateRowGT(abbr);</p>
+<p class="p1">}</p>
+<p class="p1">function liveUpdate(abbr){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>clearTimeout(liveUpdate._t);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>liveUpdate._t=setTimeout(()=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const val=document.getElementById(`ti-${abbr}`)?.value?.trim();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(val) gameTimes[abbr]=val;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const win=document.getElementById(`windows-${abbr}`);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(!win) return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const parsed=parseGameTime(val);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if(parsed!=null) win.innerHTML=`&lt;div class="windows-grid"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>${buildWindowCard(abbr,-60,'1H Before',false)}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>${buildWindowCard(abbr,0,'First Pitch',true)}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>${buildWindowCard(abbr,60,'+1 Hour',false)}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>${buildWindowCard(abbr,120,'+2 Hours',false)}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>${buildWindowCard(abbr,180,'+3 Hours',false)}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>else win.innerHTML=`&lt;div class="no-time-prompt"&gt;Enter a game time above to see the &lt;span&gt;5-window forecast&lt;/span&gt;&lt;/div&gt;`;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>},350);</p>
+<p class="p1">}</p>
+<p class="p1">function updateRowGT(abbr){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const gt=gameTimes[abbr];</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const cell=document.querySelector(`#tr-${abbr} td:nth-child(3)`);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(!cell) return;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>cell.innerHTML=gt?`&lt;span class="has-game"&gt;⚾ ${gt.toUpperCase()}&lt;/span&gt;`:`&lt;span class="no-game"&gt;no game set&lt;/span&gt;`;</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">// ── TAB SWITCHING (unchanged) ────────────────────────────────────────────────</p>
+<p class="p1">function switchTab(tab){</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('weather-view').style.display = tab==='weather'?'block':'none';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('cheat-view').style.display <span class="Apple-converted-space">  </span>= tab==='cheat'?'block':'none';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('legend-view').style.display<span class="Apple-converted-space">  </span>= tab==='legend'?'block':'none';</p>
+<p class="p1"><span class="Apple-converted-space">  </span>['weather','cheat','legend'].forEach(t=&gt;{</p>
+<p class="p1"><span class="Apple-converted-space">    </span>document.getElementById(`tab-${t}`).classList.toggle('active', t===tab);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>if(tab==='cheat') renderCheat();</p>
+<p class="p1">}</p>
+<p class="p2"><br></p>
+<p class="p1">// ── FETCH (lazy version) ─────────────────────────────────────────────────────</p>
+<p class="p1">async function fetchTeam(team){ /* original fetchTeam kept for compatibility */ }</p>
+<p class="p2"><br></p>
+<p class="p1">// ── LOAD ALL (now optional – does nothing by default) ────────────────────────</p>
+<p class="p1">async function loadAll(){ /* empty – no automatic 30 calls on page load */ }</p>
+<p class="p2"><br></p>
+<p class="p1">loadAll();<span class="Apple-converted-space">  </span>// this line is here but does nothing (lazy loading is in toggleTeam)</p>
+<p class="p1">&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
