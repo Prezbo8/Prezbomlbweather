@@ -95,8 +95,6 @@ tr.expand-row td{padding:0;border-bottom:2px solid var(--accent);}
 .time-input{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:8px 14px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;width:110px;outline:none;text-align:center;transition:border-color .2s;}
 .time-input:focus{border-color:var(--accent);}
 .time-input::placeholder{color:var(--dim);font-size:14px;}
-.set-btn{background:var(--accent);color:#000;border:none;border-radius:4px;padding:8px 18px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .15s;}
-.set-btn:hover{background:#ffd060;}
 .clear-btn{background:transparent;color:var(--muted);border:1px solid var(--border2);border-radius:4px;padding:8px 14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;}
 .clear-btn:hover{border-color:var(--c-red);color:var(--c-red);}
 .time-hint{font-size:12px;color:var(--dim);}
@@ -108,6 +106,7 @@ tr.expand-row td{padding:0;border-bottom:2px solid var(--accent);}
 .window-card{background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:18px 16px;position:relative;transition:border-color .15s;}
 .window-card.game-time-card{border-color:var(--accent);box-shadow:0 0 20px rgba(240,192,64,0.14);}
 .window-card.no-data{opacity:0.4;}
+.window-card.roof-closed{opacity:0.75;border-color:#ff4545;}
 
 .wc-label{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;color:var(--muted);}
 .wc-label .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;}
@@ -125,6 +124,21 @@ tr.expand-row td{padding:0;border-bottom:2px solid var(--accent);}
 .wc-stat-v{font-size:18px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;}
 .wc-stat-sub{font-size:11px;color:var(--muted);text-align:right;margin-top:1px;}
 
+/* NEW: Roof indicator */
+.roof-badge{
+  display:flex;align-items:center;gap:6px;background:rgba(255,69,69,0.15);color:#ff4545;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:1px;
+  padding:4px 10px;border-radius:4px;margin-top:8px;
+}
+
+/* NEW: Wind direction diagram */
+.wind-diagram{
+  width:88px;height:88px;position:relative;margin:8px auto 0;
+  background:var(--dim);border-radius:50%;border:3px solid var(--border2);
+}
+.wind-diagram svg{width:100%;height:100%;}
+
+/* Wind bar */
 .wc-wind-bar{background:var(--dim);border-radius:2px;height:4px;margin-top:10px;}
 .wc-wind-fill{height:4px;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--accent));}
 
@@ -369,36 +383,36 @@ tr.expand-row td{padding:0;border-bottom:2px solid var(--accent);}
 <script>
 // ── TEAM DATA ────────────────────────────────────────────────────────────────
 const TEAMS=[
-  {abbr:'ARI',stadium:'Chase Field',lat:33.4454,lon:-112.0667,color:'#A71930',division:'NL West',tz:'MST'},
-  {abbr:'ATL',stadium:'Truist Park',lat:33.8908,lon:-84.4682,color:'#CE1141',division:'NL East',tz:'ET'},
-  {abbr:'BAL',stadium:'Oriole Park at Camden Yards',lat:39.2852,lon:-76.6201,color:'#DF4601',division:'AL East',tz:'ET'},
-  {abbr:'BOS',stadium:'Fenway Park',lat:42.3466,lon:-71.0988,color:'#BD3039',division:'AL East',tz:'ET'},
-  {abbr:'CHC',stadium:'Wrigley Field',lat:41.9484,lon:-87.6553,color:'#0E3386',division:'NL Central',tz:'CT'},
-  {abbr:'CHW',stadium:'Guaranteed Rate Field',lat:41.8309,lon:-87.6351,color:'#27251F',division:'AL Central',tz:'CT'},
-  {abbr:'CIN',stadium:'Great American Ball Park',lat:39.1072,lon:-84.5077,color:'#C6011F',division:'NL Central',tz:'ET'},
-  {abbr:'CLE',stadium:'Progressive Field',lat:41.4951,lon:-81.6871,color:'#00385D',division:'AL Central',tz:'ET'},
-  {abbr:'COL',stadium:'Coors Field',lat:39.756,lon:-104.9942,color:'#33006F',division:'NL West',tz:'MT'},
-  {abbr:'DET',stadium:'Comerica Park',lat:42.3392,lon:-83.0488,color:'#0C2340',division:'AL Central',tz:'ET'},
-  {abbr:'HOU',stadium:'Daikin Park',lat:29.7573,lon:-95.3556,color:'#002D62',division:'AL West',tz:'CT'},
-  {abbr:'KCR',stadium:'Kauffman Stadium',lat:39.1022,lon:-94.5836,color:'#004687',division:'AL Central',tz:'CT'},
-  {abbr:'LAA',stadium:'Angel Stadium',lat:33.8003,lon:-117.8827,color:'#BA0021',division:'AL West',tz:'PT'},
-  {abbr:'LAD',stadium:'Dodger Stadium',lat:34.0736,lon:-118.2399,color:'#005A9C',division:'NL West',tz:'PT'},
-  {abbr:'MIA',stadium:'loanDepot park',lat:25.7781,lon:-80.2196,color:'#00A3E0',division:'NL East',tz:'ET'},
-  {abbr:'MIL',stadium:'American Family Field',lat:43.0281,lon:-87.9706,color:'#12284B',division:'NL Central',tz:'CT'},
-  {abbr:'MIN',stadium:'Target Field',lat:44.9817,lon:-93.2785,color:'#002B5C',division:'AL Central',tz:'CT'},
-  {abbr:'NYM',stadium:'Citi Field',lat:40.7571,lon:-73.8458,color:'#002D72',division:'NL East',tz:'ET'},
-  {abbr:'NYY',stadium:'Yankee Stadium',lat:40.8296,lon:-73.9262,color:'#1D2D5B',division:'AL East',tz:'ET'},
-  {abbr:'ATH',stadium:'Sutter Health Park',lat:38.5804,lon:-121.5138,color:'#006400',division:'AL West',tz:'PT'},
-  {abbr:'PHI',stadium:'Citizens Bank Park',lat:39.9061,lon:-75.1665,color:'#E81828',division:'NL East',tz:'ET'},
-  {abbr:'PIT',stadium:'PNC Park',lat:40.4615,lon:-80.0089,color:'#FDB827',division:'NL Central',tz:'ET'},
-  {abbr:'SDP',stadium:'Petco Park',lat:32.7521,lon:-117.1436,color:'#2F241D',division:'NL West',tz:'PT'},
-  {abbr:'SEA',stadium:'T-Mobile Park',lat:47.5915,lon:-122.3329,color:'#0C2C56',division:'AL West',tz:'PT'},
-  {abbr:'SFG',stadium:'Oracle Park',lat:37.7799,lon:-122.3893,color:'#FD5A1E',division:'NL West',tz:'PT'},
-  {abbr:'STL',stadium:'Busch Stadium',lat:38.6226,lon:-90.1928,color:'#C41E3A',division:'NL Central',tz:'CT'},
-  {abbr:'TBR',stadium:'Tropicana Field',lat:27.7685,lon:-82.6482,color:'#092C5C',division:'AL East',tz:'ET'},
-  {abbr:'TEX',stadium:'Globe Life Field',lat:32.7475,lon:-97.0842,color:'#003278',division:'AL West',tz:'CT'},
-  {abbr:'TOR',stadium:'Rogers Centre',lat:43.6417,lon:-79.3892,color:'#134A8E',division:'AL East',tz:'ET'},
-  {abbr:'WSN',stadium:'Nationals Park',lat:38.8728,lon:-77.0075,color:'#AB0003',division:'NL East',tz:'ET'},
+  {abbr:'ARI',stadium:'Chase Field',lat:33.4454,lon:-112.0667,color:'#A71930',division:'NL West',tz:'MST',roofType:'retractable'},
+  {abbr:'ATL',stadium:'Truist Park',lat:33.8908,lon:-84.4682,color:'#CE1141',division:'NL East',tz:'ET',roofType:null},
+  {abbr:'BAL',stadium:'Oriole Park at Camden Yards',lat:39.2852,lon:-76.6201,color:'#DF4601',division:'AL East',tz:'ET',roofType:null},
+  {abbr:'BOS',stadium:'Fenway Park',lat:42.3466,lon:-71.0988,color:'#BD3039',division:'AL East',tz:'ET',roofType:null},
+  {abbr:'CHC',stadium:'Wrigley Field',lat:41.9484,lon:-87.6553,color:'#0E3386',division:'NL Central',tz:'CT',roofType:null},
+  {abbr:'CHW',stadium:'Guaranteed Rate Field',lat:41.8309,lon:-87.6351,color:'#27251F',division:'AL Central',tz:'CT',roofType:null},
+  {abbr:'CIN',stadium:'Great American Ball Park',lat:39.1072,lon:-84.5077,color:'#C6011F',division:'NL Central',tz:'ET',roofType:null},
+  {abbr:'CLE',stadium:'Progressive Field',lat:41.4951,lon:-81.6871,color:'#00385D',division:'AL Central',tz:'ET',roofType:null},
+  {abbr:'COL',stadium:'Coors Field',lat:39.756,lon:-104.9942,color:'#33006F',division:'NL West',tz:'MT',roofType:null},
+  {abbr:'DET',stadium:'Comerica Park',lat:42.3392,lon:-83.0488,color:'#0C2340',division:'AL Central',tz:'ET',roofType:null},
+  {abbr:'HOU',stadium:'Daikin Park',lat:29.7573,lon:-95.3556,color:'#002D62',division:'AL West',tz:'CT',roofType:'retractable'},
+  {abbr:'KCR',stadium:'Kauffman Stadium',lat:39.1022,lon:-94.5836,color:'#004687',division:'AL Central',tz:'CT',roofType:null},
+  {abbr:'LAA',stadium:'Angel Stadium',lat:33.8003,lon:-117.8827,color:'#BA0021',division:'AL West',tz:'PT',roofType:null},
+  {abbr:'LAD',stadium:'Dodger Stadium',lat:34.0736,lon:-118.2399,color:'#005A9C',division:'NL West',tz:'PT',roofType:null},
+  {abbr:'MIA',stadium:'loanDepot park',lat:25.7781,lon:-80.2196,color:'#00A3E0',division:'NL East',tz:'ET',roofType:'retractable'},
+  {abbr:'MIL',stadium:'American Family Field',lat:43.0281,lon:-87.9706,color:'#12284B',division:'NL Central',tz:'CT',roofType:'retractable'},
+  {abbr:'MIN',stadium:'Target Field',lat:44.9817,lon:-93.2785,color:'#002B5C',division:'AL Central',tz:'CT',roofType:null},
+  {abbr:'NYM',stadium:'Citi Field',lat:40.7571,lon:-73.8458,color:'#002D72',division:'NL East',tz:'ET',roofType:null},
+  {abbr:'NYY',stadium:'Yankee Stadium',lat:40.8296,lon:-73.9262,color:'#1D2D5B',division:'AL East',tz:'ET',roofType:null},
+  {abbr:'ATH',stadium:'Sutter Health Park',lat:38.5804,lon:-121.5138,color:'#006400',division:'AL West',tz:'PT',roofType:null},
+  {abbr:'PHI',stadium:'Citizens Bank Park',lat:39.9061,lon:-75.1665,color:'#E81828',division:'NL East',tz:'ET',roofType:null},
+  {abbr:'PIT',stadium:'PNC Park',lat:40.4615,lon:-80.0089,color:'#FDB827',division:'NL Central',tz:'ET',roofType:null},
+  {abbr:'SDP',stadium:'Petco Park',lat:32.7521,lon:-117.1436,color:'#2F241D',division:'NL West',tz:'PT',roofType:null},
+  {abbr:'SEA',stadium:'T-Mobile Park',lat:47.5915,lon:-122.3329,color:'#0C2C56',division:'AL West',tz:'PT',roofType:null},
+  {abbr:'SFG',stadium:'Oracle Park',lat:37.7799,lon:-122.3893,color:'#FD5A1E',division:'NL West',tz:'PT',roofType:null},
+  {abbr:'STL',stadium:'Busch Stadium',lat:38.6226,lon:-90.1928,color:'#C41E3A',division:'NL Central',tz:'CT',roofType:null},
+  {abbr:'TBR',stadium:'Tropicana Field',lat:27.7685,lon:-82.6482,color:'#092C5C',division:'AL East',tz:'ET',roofType:'dome'},
+  {abbr:'TEX',stadium:'Globe Life Field',lat:32.7475,lon:-97.0842,color:'#003278',division:'AL West',tz:'CT',roofType:'retractable'},
+  {abbr:'TOR',stadium:'Rogers Centre',lat:43.6417,lon:-79.3892,color:'#134A8E',division:'AL East',tz:'ET',roofType:'retractable'},
+  {abbr:'WSN',stadium:'Nationals Park',lat:38.8728,lon:-77.0075,color:'#AB0003',division:'NL East',tz:'ET',roofType:null},
 ];
 
 // ── CHEAT SHEET DATA ─────────────────────────────────────────────────────────
@@ -438,7 +452,7 @@ const CHEAT=[
 // ── STATE ────────────────────────────────────────────────────────────────────
 let allData={}, gameTimes={}, openTeam=null;
 
-// ── COLOR RULES (unchanged) ──────────────────────────────────────────────────
+// ── COLOR RULES ──────────────────────────────────────────────────────────────
 function colTemp(t){if(t>=95||t<=40)return'col-red';if(t>=85)return'col-yellow';return'col-green';}
 function colHumid(h){if(h<50)return'col-red';if(h<=60)return'col-yellow';if(h<=70)return'col-dull';return'col-green';}
 function colPressure(p){if(p>1020)return'col-red';if(p>=1015)return'col-yellow';if(p>=1010)return'col-dull';return'col-green';}
@@ -451,13 +465,13 @@ function pColRow(p){return p<20?'col-green':p<40?'col-yellow':'col-red';}
 
 const cardinal=d=>['N','NE','E','SE','S','SW','W','NW'][Math.round(d/45)%8];
 
-// ── EST OFFSET HELPER (added per request: hour difference from EST) ───────────
+// ── EST OFFSET HELPER ────────────────────────────────────────────────────────
 function getEstOffset(tz){
   const map = {'ET':0,'CT':-1,'MT':-2,'PT':-3,'MST':-2};
   return map[tz] !== undefined ? map[tz] : 0;
 }
 
-// ── LAZY FETCH PATCH (only load weather when team is opened) ─────────────────
+// ── LAZY FETCH ───────────────────────────────────────────────────────────────
 function nowEST(){
   return new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
 }
@@ -469,7 +483,6 @@ async function fetchTeamData(abbr){
   if(allData[abbr] && !allData[abbr].err) return;
   const team=TEAMS.find(t=>t.abbr===abbr);
   if(!team) return;
-  // timezone=auto returns times in the stadium's LOCAL timezone — matches Google Script exactly
   const url=`https://api.open-meteo.com/v1/forecast?latitude=${team.lat}&longitude=${team.lon}`
   +`&hourly=temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m,`
   +`wind_direction_10m,wind_gusts_10m,apparent_temperature,precipitation_probability,precipitation`
@@ -501,7 +514,7 @@ function getNotes(abbr){
   return entry?entry.notes:'No 2026 notes available';
 }
 
-// ── STADIUM CHEAT SHEET ROW (appears after game time) ────────────────────────
+// ── STADIUM CHEAT SHEET ROW ──────────────────────────────────────────────────
 function buildStadiumCheatSummary(abbr){
   const row=CHEAT.find(r=>r.team===abbr);
   if(!row) return '';
@@ -523,7 +536,47 @@ function buildStadiumCheatSummary(abbr){
   </div>`;
 }
 
-// ── WINDOW CARD (2026 notes at bottom of each diagram) ───────────────────────
+// ── NEW: ROOF INDICATOR ──────────────────────────────────────────────────────
+function getRoofIndicator(abbr, h){
+  const team=TEAMS.find(t=>t.abbr===abbr);
+  if(!team || !team.roofType) return '';
+  const isClosed = (h.pPct >= 40) || (h.temp <= 40 || h.temp >= 95);
+  if(!isClosed) return '';
+  const label = team.roofType==='dome' ? 'Dome closed' : 'Roof likely closed';
+  return `<div class="roof-badge"><span style="font-size:18px">🏠</span> ${label} — weather data irrelevant</div>`;
+}
+
+// ── NEW: WIND DIRECTION DIAGRAM ──────────────────────────────────────────────
+function buildWindDiagram(wDir, wCard, wSpeed){
+  const blowDeg = (wDir + 180) % 360;
+  const rot = (blowDeg - 90) % 360;
+  return `<div class="wind-diagram">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="50" cy="38" rx="38" ry="26" fill="#0a3d1f" opacity="0.3"/>
+    <path d="M50 65 L20 85 L80 85 Z" fill="#c8a070" opacity="0.25"/>
+    <line x1="50" y1="65" x2="15" y2="88" stroke="#fff" stroke-width="2" opacity="0.4"/>
+    <line x1="50" y1="65" x2="85" y2="88" stroke="#fff" stroke-width="2" opacity="0.4"/>
+    <polygon points="47,78 53,78 55,82 45,82" fill="#fff"/>
+    <rect x="28" y="52" width="4" height="4" fill="#fff" transform="rotate(-45 30 54)"/>
+    <rect x="68" y="52" width="4" height="4" fill="#fff" transform="rotate(-45 70 54)"/>
+    <text x="50" y="18" text-anchor="middle" font-size="7" fill="#fff" opacity="0.6">CF</text>
+    <text x="18" y="32" text-anchor="middle" font-size="7" fill="#fff" opacity="0.6">LF</text>
+    <text x="82" y="32" text-anchor="middle" font-size="7" fill="#fff" opacity="0.6">RF</text>
+    <g transform="translate(50,50) rotate(${rot})">
+      <line x1="0" y1="-28" x2="0" y2="22" stroke="#3b9bff" stroke-width="4" stroke-linecap="round"/>
+      <polygon points="0,-28 6,-20 -6,-20" fill="#3b9bff"/>
+    </g>
+    <text x="50" y="8" text-anchor="middle" font-size="8" fill="#fff" opacity="0.5">N</text>
+    <text x="92" y="50" text-anchor="middle" font-size="8" fill="#fff" opacity="0.5">E</text>
+    <text x="50" y="92" text-anchor="middle" font-size="8" fill="#fff" opacity="0.5">S</text>
+    <text x="8" y="50" text-anchor="middle" font-size="8" fill="#fff" opacity="0.5">W</text>
+    <text x="50" y="72" text-anchor="middle" font-size="9" fill="#f0c040" font-weight="700">${wSpeed} mph</text>
+    <text x="50" y="82" text-anchor="middle" font-size="7" fill="#fff" opacity="0.6">${wCard}</text>
+  </svg>
+  </div>`;
+}
+
+// ── WINDOW CARD (now includes roof indicator + wind diagram) ─────────────────
 function buildWindowCard(abbr,offsetMins,label,isGame){
   const gt=gameTimes[abbr];
   const parsed=parseGameTime(gt);
@@ -533,17 +586,27 @@ function buildWindowCard(abbr,offsetMins,label,isGame){
   const timeLabel=minToLabel(targetMins);
   const gc=isGame?'game-time-card':'';
   if(!h) return `<div class="window-card ${gc} no-data"><div class="wc-label"><div class="dot"></div>${label}</div><div class="wc-time">${timeLabel}</div><div class="wc-no-data">No data for this window</div></div>`;
+
   const windPct=Math.min((h.wSpeed/35)*100,100);
-  return `<div class="window-card ${gc}">
+  const roofHTML = getRoofIndicator(abbr, h);
+  const diagramHTML = buildWindDiagram(h.wDir, h.wCard, h.wSpeed);
+
+  return `<div class="window-card ${gc} ${roofHTML?'roof-closed':''}">
   <div class="wc-label"><div class="dot"></div>${label}</div>
   <div class="wc-time">${timeLabel}</div>
   <div class="wc-temp ${colTemp(h.temp)}">${h.temp}°F</div>
   <div class="wc-feels">Feels like ${h.feels}°F</div>
+
+  ${diagramHTML}
+
   <div class="wc-stat"><span class="wc-stat-l">Humidity</span><div style="text-align:right"><div class="wc-stat-v ${colHumid(h.humid)}">${h.humid}%</div></div></div>
   <div class="wc-stat"><span class="wc-stat-l">Pressure</span><div style="text-align:right"><div class="wc-stat-v ${colPressure(h.pressure)}">${h.pressure} <span style="font-size:13px;font-weight:400">hPa</span></div></div></div>
   <div class="wc-stat"><span class="wc-stat-l">Wind</span><div style="text-align:right"><div class="wc-stat-v ${colWind(h.wSpeed)}">${h.wSpeed} mph</div><div class="wc-stat-sub">${h.wCard} · ${h.wDir}°</div></div></div>
   <div class="wc-stat"><span class="wc-stat-l">Gusts</span><div style="text-align:right"><div class="wc-stat-v ${colGusts(h.gusts)}">${h.gusts} mph</div></div></div>
   <div class="wc-stat"><span class="wc-stat-l">Rain %</span><div style="text-align:right"><div class="wc-stat-v ${colPrecip(h.pPct)}">${h.pPct}%</div><div class="wc-stat-sub">${h.pIn}" precip</div></div></div>
+
+  ${roofHTML}
+
   <div class="wc-wind-bar"><div class="wc-wind-fill" style="width:${windPct}%"></div></div>
   <div class="wc-notes">
   <div class="wc-notes-label">2026 NOTES / QUICK RULES</div>
@@ -557,7 +620,6 @@ function buildExpandPanel(abbr){
   const parsed=parseGameTime(gt);
   const hasTime=parsed!=null;
 
-  // ── NEW: EST hour difference (added per user request) ─────────────────────
   const teamInfo = TEAMS.find(t=>t.abbr===abbr);
   const tz = teamInfo?.tz || 'local';
   const offset = getEstOffset(tz);
@@ -589,12 +651,12 @@ function buildExpandPanel(abbr){
   </div>`;
 }
 
-// ── TIME PARSING (unchanged) ─────────────────────────────────────────────────
+// ── TIME PARSING ─────────────────────────────────────────────────────────────
 function parseGameTime(str){if(!str)return null;str=str.trim().toUpperCase();let h,m=0,isPM=str.includes('PM'),isAM=str.includes('AM');str=str.replace(/[APM\s]/g,'');if(str.includes(':'))[h,m]=str.split(':').map(Number);else if(str.length<=2)h=Number(str);else{h=Number(str.slice(0,-2));m=Number(str.slice(-2));}if(isNaN(h))return null;if(isPM&&h<12)h+=12;if(isAM&&h===12)h=0;if(!isPM&&!isAM&&h<10)h+=12;return h*60+m;}
 function minToLabel(mins){if(mins==null)return'—';let h=Math.floor(mins/60)%24,m=mins%60;const ap=h>=12?'PM':'AM';const d=h>12?h-12:(h===0?12:h);return`${d}:${String(m).padStart(2,'0')} ${ap} EST`;}
 function getHourData(abbr,targetMins){const d=allData[abbr];if(!d||d.err||!d.hours.length)return null;const th=Math.floor(targetMins/60)%24;return d.hours.find(h=>h.time.getHours()===th)||null;}
 
-// ── TABLE RENDER (unchanged) ─────────────────────────────────────────────────
+// ── TABLE RENDER ─────────────────────────────────────────────────────────────
 function renderTable(){
   const q=document.getElementById('search').value.toLowerCase().trim();
   const divF=document.getElementById('div-filter').value;
@@ -638,7 +700,7 @@ function renderTable(){
   }).join('');
 }
 
-// ── CHEAT SHEET RENDER (unchanged) ───────────────────────────────────────────
+// ── CHEAT SHEET RENDER ───────────────────────────────────────────────────────
 function renderCheat(){
   const q=document.getElementById('cheat-search').value.toLowerCase().trim();
   const data=CHEAT.filter(r=>!q||r.team.toLowerCase().includes(q)||r.stadium.toLowerCase().includes(q));
@@ -658,11 +720,11 @@ function renderCheat(){
   }).join('');
 }
 
-// ── INTERACTIONS (toggle now uses lazy fetch) ────────────────────────────────
+// ── INTERACTIONS ─────────────────────────────────────────────────────────────
 function toggleTeam(abbr){
   const prev=openTeam;
   openTeam=openTeam===abbr?null:abbr;
-  if(openTeam) fetchTeamData(abbr);   // ← LAZY LOADING PATCH (fixes GitHub stuck loading)
+  if(openTeam) fetchTeamData(abbr);
   renderTable();
   if(openTeam) setTimeout(()=>{document.getElementById(`tr-${abbr}`)?.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
 }
@@ -704,7 +766,7 @@ function updateRowGT(abbr){
   cell.innerHTML=gt?`<span class="has-game">⚾ ${gt.toUpperCase()}</span>`:`<span class="no-game">no game set</span>`;
 }
 
-// ── TAB SWITCHING (unchanged) ────────────────────────────────────────────────
+// ── TAB SWITCHING ────────────────────────────────────────────────────────────
 function switchTab(tab){
   document.getElementById('weather-view').style.display = tab==='weather'?'block':'none';
   document.getElementById('cheat-view').style.display   = tab==='cheat'?'block':'none';
@@ -715,24 +777,18 @@ function switchTab(tab){
   if(tab==='cheat') renderCheat();
 }
 
-// ── FETCH (lazy version) ─────────────────────────────────────────────────────
-async function fetchTeam(team){ /* original fetchTeam kept for compatibility */ }
-
-// ── REFRESH BUTTON ────────────────────────────────────────────────────────────
+// ── REFRESH ──────────────────────────────────────────────────────────────────
 async function loadAll(){
   const btn=document.getElementById('refresh-btn');
   const icon=document.getElementById('ref-icon');
   btn.disabled=true;
   icon.classList.add('spin');
 
-  // Clear all cached data so everything re-fetches fresh
   const loadedAbbrs=Object.keys(allData);
   allData={};
 
-  // Re-fetch every team that was previously loaded
   await Promise.all(loadedAbbrs.map(abbr=>fetchTeamData(abbr)));
 
-  // If a team is open, re-render its expand panel with fresh data
   if(openTeam){
     const cell=document.querySelector(`#er-${openTeam} td`);
     if(cell) cell.innerHTML=buildExpandPanel(openTeam);
@@ -743,7 +799,7 @@ async function loadAll(){
   btn.disabled=false;
 }
 
-// Dismiss loading overlay immediately (lazy loading is in toggleTeam)
+// ── STARTUP ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   const overlay = document.getElementById('overlay');
   if(overlay) overlay.classList.add('gone');
