@@ -272,6 +272,10 @@ tr.expand-row td{padding:0;border-bottom:2px solid var(--accent);}
   <option value="alpha">Team A–Z</option>
   <option value="game">Game Time</option>
   </select>
+
+  <!-- NEW: Clear All button placed right next to the Sort header -->
+  <button onclick="clearAllTimes()" style="background:#ff4545;color:#fff;border:none;border-radius:4px;padding:9px 18px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;margin-left:8px;">Clear All Times</button>
+
   <div class="status-pill" id="status-pill"><b>30</b> stadiums</div>
   </div>
   <div class="table-wrap">
@@ -685,6 +689,14 @@ function updateRowGT(abbr){
   const cell=document.querySelector(`#tr-${abbr} td:nth-child(3)`);
   if(!cell) return;
   cell.innerHTML=gt?`<span class="has-game">⚾ ${gt.toUpperCase()}</span>`:`<span class="no-game">no game set</span>`;
+}
+
+// ── NEW: Clear All button function (erases gameTimes for all teams) ───────────
+function clearAllTimes(){
+  if(confirm("Clear game times for ALL teams?")){
+    gameTimes = {};
+    renderTable();
+  }
 }
 
 // ── TAB SWITCHING (unchanged) ────────────────────────────────────────────────
