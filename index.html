@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MLB WEATHER HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#080b10; --surface:#0d1219; --panel:#111820; --border:#1c2533; --border2:#243040;
+  --text:#dce8f5; --muted:#4a6080; --dim:#2a3a50; --accent:#f0c040;
+  --c-red:#ff4545; --c-yellow:#f0c040; --c-dull:#6fcf60; --c-green:#30d98a;
+  --blue:#3b9bff; --orange:#ff8c30;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* ── HEADER ── */
+.site-header{
+  background:linear-gradient(180deg,#050810,#080b10);
+  border-bottom:2px solid var(--accent);
+  padding:0 32px; position:sticky; top:0; z-index:200;
+  display:flex; align-items:stretch; justify-content:space-between;
+  box-shadow:0 4px 40px rgba(240,192,64,0.08);
+}
+.header-brand{display:flex;align-items:center;gap:16px;padding:14px 0;}
+.brand-icon{width:46px;height:46px;background:var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:22px;transform:rotate(-3deg);box-shadow:0 0 20px rgba(240,192,64,0.4);}
+.brand-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:32px;letter-spacing:3px;text-transform:uppercase;color:#fff;}
+.brand-title em{color:var(--accent);font-style:normal;}
+.brand-sub{font-size:10px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-top:3px;}
+.header-right{display:flex;align-items:center;gap:16px;}
+.live-badge{display:flex;align-items:center;gap:7px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;color:var(--c-red);text-transform:uppercase;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--c-red);animation:pulse-dot 1.4s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.refresh-btn{background:var(--accent);color:#000;border:none;border-radius:4px;padding:10px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s;}
+.refresh-btn:hover{background:#ffd060;transform:translateY(-1px);}
+.refresh-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+.spin{animation:spin .9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+#last-updated{font-size:12px;color:var(--muted);}
+
+/* ── TICKER ── */
+.ticker-bar{background:var(--accent);padding:6px 0;overflow:hidden;white-space:nowrap;}
+.ticker-inner{display:inline-block;animation:ticker 40s linear infinite;}
+.ticker-inner span{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;color:#000;text-transform:uppercase;padding:0 28px;}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── TABS ── */
+.tab-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;display:flex;gap:0;}
+.tab-btn{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:14px 22px;border:none;background:transparent;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;margin-bottom:-1px;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* ── CONTROLS ── */
+.controls-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.search-wrap{position:relative;}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+.search-input{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:9px 14px 9px 36px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;width:210px;outline:none;transition:border-color .2s;}
+.search-input:focus{border-color:var(--accent);}
+.search-input::placeholder{color:var(--muted);}
+.ctrl-select{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:9px 14px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;cursor:pointer;outline:none;}
+.divider{width:1px;height:28px;background:var(--border2);flex-shrink:0;}
+.ctrl-label{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.status-pill{margin-left:auto;background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:6px 14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;color:var(--muted);}
+.status-pill b{color:var(--accent);}
+
+/* ── TABLE ── */
+.table-wrap{padding:20px 32px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:700px;}
+thead tr{background:var(--panel);border-bottom:2px solid var(--border2);}
+th{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:12px 16px;text-align:left;white-space:nowrap;user-select:none;}
+tbody tr.team-row{border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
+tbody tr.team-row:hover{background:rgba(240,192,64,0.04);}
+tbody tr.team-row.open{background:rgba(240,192,64,0.06);border-bottom:none;}
+td{padding:12px 16px;vertical-align:middle;white-space:nowrap;}
+.team-badge{display:inline-flex;align-items:center;justify-content:center;width:54px;height:28px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:14px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.6);}
+.stadium-name{font-weight:500;font-size:14px;}
+.stadium-div{font-size:11px;color:var(--muted);margin-top:1px;}
+.summary-temp{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;}
+.no-game{font-size:12px;color:var(--dim);font-style:italic;}
+.has-game{font-size:13px;font-weight:700;color:var(--accent);font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;}
+.coord-link{font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:0.5px;color:var(--blue);text-decoration:none;white-space:nowrap;padding:3px 6px;border:1px solid rgba(59,155,255,0.25);border-radius:3px;transition:all .15s;}
+.coord-link:hover{color:#fff;background:rgba(59,155,255,0.18);border-color:var(--blue);}
+.expand-arrow{font-size:12px;color:var(--muted);transition:transform .25s;display:inline-block;}
+.open .expand-arrow{transform:rotate(180deg);color:var(--accent);}
+tr.expand-row{display:none;}
+tr.expand-row.open{display:table-row;}
+tr.expand-row td{padding:0;border-bottom:2px solid var(--accent);}
+
+/* ── EXPAND PANEL ── */
+.expand-panel{background:var(--surface);padding:20px 24px 24px;border-top:1px solid var(--border2);animation:slideDown .2s ease;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.time-entry{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border2);}
+.time-entry label{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.time-input{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:8px 14px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;width:110px;outline:none;text-align:center;transition:border-color .2s;}
+.time-input:focus{border-color:var(--accent);}
+.time-input::placeholder{color:var(--dim);font-size:14px;}
+.set-btn{background:var(--accent);color:#000;border:none;border-radius:4px;padding:8px 18px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+.set-btn:hover{background:#ffd060;}
+.clear-btn{background:transparent;color:var(--muted);border:1px solid var(--border2);border-radius:4px;padding:8px 14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+.clear-btn:hover{border-color:var(--c-red);color:var(--c-red);}
+.time-hint{font-size:12px;color:var(--dim);}
+.tz-note{font-size:13px;color:var(--c-yellow);background:rgba(240,192,64,0.08);border:1px solid rgba(240,192,64,0.25);border-radius:4px;padding:5px 12px;white-space:nowrap;}
+
+/* ── WEATHER WINDOWS ── */
+.windows-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+
+.window-card{background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:18px 16px;position:relative;transition:border-color .15s;}
+.window-card.game-time-card{border-color:var(--accent);box-shadow:0 0 20px rgba(240,192,64,0.14);}
+.window-card.no-data{opacity:0.4;}
+
+.wc-label{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;color:var(--muted);}
+.wc-label .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.game-time-card .wc-label{color:var(--accent);}
+.game-time-card .wc-label .dot{background:var(--accent);}
+.wc-time{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--muted);margin-bottom:14px;}
+
+/* BIG values inside window cards */
+.wc-temp{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:42px;line-height:1;margin-bottom:2px;}
+.wc-feels{font-size:14px;color:var(--muted);margin-bottom:16px;}
+
+.wc-stat{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.wc-stat:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.wc-stat-l{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;}
+.wc-stat-v{font-size:18px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;}
+.wc-stat-sub{font-size:11px;color:var(--muted);text-align:right;margin-top:1px;}
+
+.wc-wind-bar{background:var(--dim);border-radius:2px;height:4px;margin-top:10px;}
+.wc-wind-fill{height:4px;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--accent));}
+
+/* 2026 NOTES / QUICK RULES – bottom of EVERY diagram */
+.wc-notes{margin-top:18px;padding-top:12px;border-top:1px solid var(--border2);font-size:15px;line-height:1.6;color:var(--text);font-weight:500;}
+.wc-notes-label{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+
+.wc-no-data{font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:1px;color:var(--dim);text-align:center;padding:24px 0;}
+.no-time-prompt{text-align:center;padding:32px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;color:var(--dim);}
+.no-time-prompt span{color:var(--accent);}
+
+/* NEW: Stadium Cheat Sheet row that appears after game time is entered */
+.cheat-summary{background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:16px;margin-top:24px;}
+.cheat-summary-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
+.cheat-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;font-size:13px;}
+.cheat-summary-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.cheat-summary-value{font-weight:700;color:var(--text);}
+
+/* color classes */
+.col-red   {color:var(--c-red)!important;}
+.col-yellow{color:var(--c-yellow)!important;}
+.col-dull  {color:var(--c-dull)!important;}
+.col-green {color:var(--c-green)!important;}
+
+/* ── CHEAT SHEET TAB ── */
+#cheat-view{display:none;padding:24px 32px;}
+.cheat-search-bar{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.cheat-search{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:9px 16px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;width:240px;outline:none;transition:border-color .2s;}
+.cheat-search:focus{border-color:var(--accent);}
+.cheat-search::placeholder{color:var(--muted);}
+
+.cheat-table-wrap{overflow-x:auto;}
+.cheat-table{width:100%;border-collapse:collapse;min-width:900px;}
+.cheat-table thead tr{background:var(--panel);border-bottom:2px solid var(--border2);}
+.cheat-table th{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:12px 14px;text-align:left;white-space:nowrap;}
+.cheat-table tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
+.cheat-table tbody tr:hover{background:rgba(255,255,255,0.02);}
+.cheat-table td{padding:11px 14px;font-size:13px;vertical-align:top;}
+.cheat-table td.notes{white-space:normal;max-width:320px;line-height:1.5;font-size:12px;color:var(--muted);}
+.wind-friendly{color:var(--c-green);font-weight:600;font-size:12px;}
+.wind-pitcher{color:var(--c-red);font-weight:600;font-size:12px;}
+.dim-val{color:var(--muted);}
+
+/* ── LEGEND ── */
+.legend-section{margin-bottom:28px;}
+.legend-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border2);}
+.legend-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:20px;}
+.legend-card{background:var(--panel);border:1px solid var(--border2);border-radius:6px;padding:14px 16px;}
+.legend-card-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;color:var(--text);}
+.legend-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.legend-row:last-child{border-bottom:none;}
+.legend-swatch{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-right:8px;}
+.legend-left{display:flex;align-items:center;}
+.legend-range{color:var(--muted);font-size:12px;}
+.swatch-red   {background:var(--c-red);}
+.swatch-yellow{background:var(--c-yellow);}
+.swatch-dull  {background:var(--c-dull);}
+.swatch-green {background:var(--c-green);}
+
+/* ── LOADING ── */
+#overlay{position:fixed;inset:0;background:rgba(8,11,16,0.92);backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:20px;transition:opacity .4s;}
+#overlay.gone{opacity:0;pointer-events:none;}
+.ov-ring{width:56px;height:56px;border:4px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .85s linear infinite;}
+.ov-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;letter-spacing:4px;text-transform:uppercase;}
+.ov-sub{font-size:13px;color:var(--muted);}
+.ov-prog{width:280px;height:3px;background:var(--border2);border-radius:2px;overflow:hidden;}
+.ov-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width .3s;}
+.empty-row td{text-align:center;padding:60px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:1px;}
+
+@media(max-width:900px){
+  .windows-grid{grid-template-columns:1fr 1fr;}
+  .site-header{padding:0 16px;}
+  .controls-bar{padding:12px 16px;}
+  .table-wrap{padding:12px;}
+  #cheat-view{padding:16px;}
+}
+</style>
+</head>
+<body>
+
+<div id="overlay" style="display:none;">
+  <div class="ov-ring"></div>
+  <div class="ov-title">MLB Weather HQ</div>
+  <div class="ov-sub" id="ov-sub">Ready – click any team to load weather</div>
+</div>
+
+<header class="site-header">
+  <div class="header-brand">
+  <div class="brand-icon">⚾</div>
+  <div>
+  <div class="brand-title">MLB <em>Weather</em> HQ</div>
+  <div class="brand-sub">Click any team · Enter game time · See 5-window forecast</div>
+  </div>
+  </div>
+  <div class="header-right">
+  <div class="live-badge"><div class="live-dot"></div> Live</div>
+  <div id="last-updated"></div>
+  <button class="refresh-btn" id="refresh-btn" onclick="loadAll()">
+  <svg id="ref-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-3"/></svg>
+  Refresh
+  </button>
+  </div>
+</header>
+
+<div class="ticker-bar">
+  <div class="ticker-inner">
+  <span>⚾ MLB WEATHER HQ</span><span>·</span>
+  <span>ARI</span><span>ATL</span><span>BAL</span><span>BOS</span><span>CHC</span><span>CHW</span>
+  <span>CIN</span><span>CLE</span><span>COL</span><span>DET</span><span>HOU</span><span>KCR</span>
+  <span>LAA</span><span>LAD</span><span>MIA</span><span>MIL</span><span>MIN</span><span>NYM</span>
+  <span>NYY</span><span>ATH</span><span>PHI</span><span>PIT</span><span>SDP</span><span>SEA</span>
+  <span>SFG</span><span>STL</span><span>TBR</span><span>TEX</span><span>TOR</span><span>WSN</span>
+  <span>·</span><span>⚾ MLB WEATHER HQ</span><span>·</span>
+  <span>ARI</span><span>ATL</span><span>BAL</span><span>BOS</span><span>CHC</span><span>CHW</span>
+  <span>CIN</span><span>CLE</span><span>COL</span><span>DET</span><span>HOU</span><span>KCR</span>
+  <span>LAA</span><span>LAD</span><span>MIA</span><span>MIL</span><span>MIN</span><span>NYM</span>
+  <span>NYY</span><span>ATH</span><span>PHI</span><span>PIT</span><span>SDP</span><span>SEA</span>
+  <span>SFG</span><span>STL</span><span>TBR</span><span>TEX</span><span>TOR</span><span>WSN</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-weather" onclick="switchTab('weather')">⛅ Weather Dashboard</button>
+  <button class="tab-btn" id="tab-cheat" onclick="switchTab('cheat')">🏟️ Stadium Cheat Sheet</button>
+  <button class="tab-btn" id="tab-legend" onclick="switchTab('legend')">🎨 Color Legend</button>
+</div>
+
+<!-- WEATHER VIEW -->
+<div id="weather-view">
+  <div class="controls-bar">
+  <div class="search-wrap">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  <input class="search-input" id="search" type="text" placeholder="Search team or stadium…" oninput="renderTable()"/>
+  </div>
+  <div class="divider"></div>
+  <span class="ctrl-label">Division</span>
+  <select class="ctrl-select" id="div-filter" onchange="renderTable()">
+  <option value="all">All Teams</option>
+  <option value="AL East">AL East</option><option value="AL Central">AL Central</option><option value="AL West">AL West</option>
+  <option value="NL East">NL East</option><option value="NL Central">NL Central</option><option value="NL West">NL West</option>
+  </select>
+  <div class="divider"></div>
+  <span class="ctrl-label">Sort</span>
+  <select class="ctrl-select" id="sort" onchange="renderTable()">
+  <option value="alpha">Team A–Z</option>
+  <option value="game">Game Time</option>
+  </select>
+  <div class="status-pill" id="status-pill"><b>30</b> stadiums</div>
+  </div>
+  <div class="table-wrap">
+  <table id="main-table">
+  <thead>
+  <tr>
+  <th>Team</th><th>Stadium</th><th>Game Time</th>
+  <th>Curr Temp</th><th>Wind</th><th>Rain %</th><th>Coords</th><th></th>
+  </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+  </table>
+  </div>
+</div>
+
+<!-- CHEAT SHEET VIEW -->
+<div id="cheat-view">
+  <div class="cheat-search-bar">
+  <div class="search-wrap">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  <input class="cheat-search search-input" id="cheat-search" type="text" placeholder="Search team or stadium…" oninput="renderCheat()"/>
+  </div>
+  </div>
+  <div class="cheat-table-wrap">
+  <table class="cheat-table">
+  <thead>
+  <tr>
+  <th>Team</th><th>Stadium</th><th>LF</th><th>CF</th><th>RF</th>
+  <th>LF Wall</th><th>RF Wall</th><th>Hitter Winds</th><th>Pitcher Winds</th><th>2026 Notes</th>
+  </tr>
+  </thead>
+  <tbody id="cheat-tbody"></tbody>
+  </table>
+  </div>
+</div>
+
+<!-- LEGEND VIEW -->
+<div id="legend-view" style="display:none;padding:24px 32px;">
+  <div class="legend-section">
+  <div class="legend-title">How to read the color codes</div>
+  <div class="legend-grid">
+
+  <div class="legend-card">
+  <div class="legend-card-title">🌡️ Temperature (°F)</div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-red"></div><span class="col-red">Hot / Cold Extreme</span></div><span class="legend-range">≥ 95°F or ≤ 40°F</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-yellow"></div><span class="col-yellow">Warm</span></div><span class="legend-range">85–94°F</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-green"></div><span class="col-green">Comfortable</span></div><span class="legend-range">41–84°F</span></div>
+  </div>
+
+  <div class="legend-card">
+  <div class="legend-card-title">💧 Humidity (%)</div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-red"></div><span class="col-red">Very Dry</span></div><span class="legend-range">&lt; 50%</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-yellow"></div><span class="col-yellow">Moderate</span></div><span class="legend-range">50–60%</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-dull"></div><span class="col-dull">Good</span></div><span class="legend-range">60–70%</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-green"></div><span class="col-green">Ideal</span></div><span class="legend-range">&gt; 70%</span></div>
+  </div>
+
+  <div class="legend-card">
+  <div class="legend-card-title">🔵 Pressure (hPa)</div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-red"></div><span class="col-red">High Pressure</span></div><span class="legend-range">&gt; 1020 hPa</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-yellow"></div><span class="col-yellow">Slightly High</span></div><span class="legend-range">1015–1020 hPa</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-dull"></div><span class="col-dull">Normal</span></div><span class="legend-range">1010–1015 hPa</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-green"></div><span class="col-green">Low Pressure</span></div><span class="legend-range">&lt; 1010 hPa</span></div>
+  </div>
+
+  <div class="legend-card">
+  <div class="legend-card-title">💨 Wind Speed (mph)</div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-red"></div><span class="col-red">Calm / No Carry</span></div><span class="legend-range">≤ 5.9 mph</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-yellow"></div><span class="col-yellow">Light</span></div><span class="legend-range">6–12.9 mph</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-dull"></div><span class="col-dull">Moderate</span></div><span class="legend-range">13–19.9 mph</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-green"></div><span class="col-green">Strong Carry</span></div><span class="legend-range">≥ 20 mph</span></div>
+  </div>
+
+  <div class="legend-card">
+  <div class="legend-card-title">💨 Wind Gusts (mph)</div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-red"></div><span class="col-red">Minimal Gusts</span></div><span class="legend-range">≤ 10.9 mph</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-yellow"></div><span class="col-yellow">Light Gusts</span></div><span class="legend-range">11–18.9 mph</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-dull"></div><span class="col-dull">Moderate Gusts</span></div><span class="legend-range">19–25 mph</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-green"></div><span class="col-green">Strong Gusts</span></div><span class="legend-range">≥ 25.1 mph</span></div>
+  </div>
+
+  <div class="legend-card">
+  <div class="legend-card-title">🌧️ Rain Probability (%)</div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-green"></div><span class="col-green">Clear</span></div><span class="legend-range">&lt; 20%</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-yellow"></div><span class="col-yellow">Possible</span></div><span class="legend-range">20–39%</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-red"></div><span class="col-red">Likely</span></div><span class="legend-range">40–69%</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-red"></div><span class="col-red">Rain Game</span></div><span class="legend-range">≥ 70%</span></div>
+  </div>
+
+  </div>
+  </div>
+</div>
+
+<script>
+// ── TEAM DATA ────────────────────────────────────────────────────────────────
+const TEAMS=[
+  {abbr:'ARI',stadium:'Chase Field',lat:33.4454,lon:-112.0667,color:'#A71930',division:'NL West',tz:'MST'},
+  {abbr:'ATL',stadium:'Truist Park',lat:33.8908,lon:-84.4682,color:'#CE1141',division:'NL East',tz:'ET'},
+  {abbr:'BAL',stadium:'Oriole Park at Camden Yards',lat:39.2852,lon:-76.6201,color:'#DF4601',division:'AL East',tz:'ET'},
+  {abbr:'BOS',stadium:'Fenway Park',lat:42.3466,lon:-71.0988,color:'#BD3039',division:'AL East',tz:'ET'},
+  {abbr:'CHC',stadium:'Wrigley Field',lat:41.9484,lon:-87.6553,color:'#0E3386',division:'NL Central',tz:'CT'},
+  {abbr:'CHW',stadium:'Guaranteed Rate Field',lat:41.8309,lon:-87.6351,color:'#27251F',division:'AL Central',tz:'CT'},
+  {abbr:'CIN',stadium:'Great American Ball Park',lat:39.1072,lon:-84.5077,color:'#C6011F',division:'NL Central',tz:'ET'},
+  {abbr:'CLE',stadium:'Progressive Field',lat:41.4951,lon:-81.6871,color:'#00385D',division:'AL Central',tz:'ET'},
+  {abbr:'COL',stadium:'Coors Field',lat:39.756,lon:-104.9942,color:'#33006F',division:'NL West',tz:'MT'},
+  {abbr:'DET',stadium:'Comerica Park',lat:42.3392,lon:-83.0488,color:'#0C2340',division:'AL Central',tz:'ET'},
+  {abbr:'HOU',stadium:'Daikin Park',lat:29.7573,lon:-95.3556,color:'#002D62',division:'AL West',tz:'CT'},
+  {abbr:'KCR',stadium:'Kauffman Stadium',lat:39.1022,lon:-94.5836,color:'#004687',division:'AL Central',tz:'CT'},
+  {abbr:'LAA',stadium:'Angel Stadium',lat:33.8003,lon:-117.8827,color:'#BA0021',division:'AL West',tz:'PT'},
+  {abbr:'LAD',stadium:'Dodger Stadium',lat:34.0736,lon:-118.2399,color:'#005A9C',division:'NL West',tz:'PT'},
+  {abbr:'MIA',stadium:'loanDepot park',lat:25.7781,lon:-80.2196,color:'#00A3E0',division:'NL East',tz:'ET'},
+  {abbr:'MIL',stadium:'American Family Field',lat:43.0281,lon:-87.9706,color:'#12284B',division:'NL Central',tz:'CT'},
+  {abbr:'MIN',stadium:'Target Field',lat:44.9817,lon:-93.2785,color:'#002B5C',division:'AL Central',tz:'CT'},
+  {abbr:'NYM',stadium:'Citi Field',lat:40.7571,lon:-73.8458,color:'#002D72',division:'NL East',tz:'ET'},
+  {abbr:'NYY',stadium:'Yankee Stadium',lat:40.8296,lon:-73.9262,color:'#1D2D5B',division:'AL East',tz:'ET'},
+  {abbr:'ATH',stadium:'Sutter Health Park',lat:38.5804,lon:-121.5138,color:'#006400',division:'AL West',tz:'PT'},
+  {abbr:'PHI',stadium:'Citizens Bank Park',lat:39.9061,lon:-75.1665,color:'#E81828',division:'NL East',tz:'ET'},
+  {abbr:'PIT',stadium:'PNC Park',lat:40.4615,lon:-80.0089,color:'#FDB827',division:'NL Central',tz:'ET'},
+  {abbr:'SDP',stadium:'Petco Park',lat:32.7521,lon:-117.1436,color:'#2F241D',division:'NL West',tz:'PT'},
+  {abbr:'SEA',stadium:'T-Mobile Park',lat:47.5915,lon:-122.3329,color:'#0C2C56',division:'AL West',tz:'PT'},
+  {abbr:'SFG',stadium:'Oracle Park',lat:37.7799,lon:-122.3893,color:'#FD5A1E',division:'NL West',tz:'PT'},
+  {abbr:'STL',stadium:'Busch Stadium',lat:38.6226,lon:-90.1928,color:'#C41E3A',division:'NL Central',tz:'CT'},
+  {abbr:'TBR',stadium:'Tropicana Field',lat:27.7685,lon:-82.6482,color:'#092C5C',division:'AL East',tz:'ET'},
+  {abbr:'TEX',stadium:'Globe Life Field',lat:32.7475,lon:-97.0842,color:'#003278',division:'AL West',tz:'CT'},
+  {abbr:'TOR',stadium:'Rogers Centre',lat:43.6417,lon:-79.3892,color:'#134A8E',division:'AL East',tz:'ET'},
+  {abbr:'WSN',stadium:'Nationals Park',lat:38.8728,lon:-77.0075,color:'#AB0003',division:'NL East',tz:'ET'},
+];
+
+// ── CHEAT SHEET DATA ─────────────────────────────────────────────────────────
+const CHEAT=[
+  {team:'ARI',stadium:'Chase Field',lf:330,cf:407,rf:335,lfWall:'25',rfWall:'8',hitter:'S, SW, SE',pitcher:'N, NE',notes:'Roof open = S wind = biggest HR boost'},
+  {team:'ATL',stadium:'Truist Park',lf:335,cf:400,rf:325,lfWall:'25',rfWall:'25',hitter:'S, SW',pitcher:'N, NE',notes:'South wind = strongest offensive boost'},
+  {team:'BAL',stadium:'Oriole Park at Camden Yards',lf:333,cf:410,rf:318,lfWall:'7',rfWall:'7',hitter:'S, SW',pitcher:'N, NE',notes:'Short RF porch; S wind boosts HR'},
+  {team:'BOS',stadium:'Fenway Park',lf:310,cf:420,rf:302,lfWall:'37 (Monster)',rfWall:'5–15',hitter:'S, SW',pitcher:'N, NE',notes:'Green Monster still dominates'},
+  {team:'CHC',stadium:'Wrigley Field',lf:355,cf:400,rf:353,lfWall:'15–20',rfWall:'15–20',hitter:'S, SW',pitcher:'N, NE',notes:'Classic "wind blowing out" park'},
+  {team:'CHW',stadium:'Guaranteed Rate Field',lf:330,cf:400,rf:335,lfWall:'8–15',rfWall:'8–15',hitter:'S, SW',pitcher:'N, NE',notes:'Standard open-air park'},
+  {team:'CIN',stadium:'Great American Ball Park',lf:328,cf:404,rf:325,lfWall:'12',rfWall:'12',hitter:'S, SW',pitcher:'N, NE',notes:'Very hitter-friendly when wind out'},
+  {team:'CLE',stadium:'Progressive Field',lf:325,cf:405,rf:325,lfWall:'19',rfWall:'19',hitter:'S, SW',pitcher:'N, NE',notes:'Symmetric but deep CF'},
+  {team:'COL',stadium:'Coors Field',lf:347,cf:415,rf:350,lfWall:'8–25',rfWall:'8–25',hitter:'Any wind (altitude)',pitcher:'Almost never',notes:'Altitude = permanent hitter boost'},
+  {team:'DET',stadium:'Comerica Park',lf:345,cf:420,rf:330,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'One of deepest CF in MLB'},
+  {team:'HOU',stadium:'Daikin Park',lf:315,cf:435,rf:326,lfWall:'21–90 (train)',rfWall:'21–90',hitter:'S, SW',pitcher:'N, NE',notes:'Tall LF wall; roof usually closed'},
+  {team:'KCR',stadium:'Kauffman Stadium (2026)',lf:347,cf:410,rf:344,lfWall:'8.5',rfWall:'8.5',hitter:'S, SW (much more now)',pitcher:'N, NE',notes:'New 2026: fences in 9–10 ft; walls lowered to 8.5 ft; now much more HR-friendly'},
+  {team:'LAA',stadium:'Angel Stadium',lf:330,cf:396,rf:330,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Very symmetric'},
+  {team:'LAD',stadium:'Dodger Stadium',lf:330,cf:400,rf:330,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Nearly symmetric'},
+  {team:'MIA',stadium:'loanDepot Park',lf:340,cf:420,rf:335,lfWall:'8–14',rfWall:'8–14',hitter:'S, SW (roof often closed)',pitcher:'N, NE',notes:'Deep CF; roof usually closed'},
+  {team:'MIL',stadium:'American Family Field',lf:332,cf:400,rf:325,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Retractable roof'},
+  {team:'MIN',stadium:'Target Field',lf:339,cf:404,rf:328,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Open-air, lake breezes common'},
+  {team:'NYM',stadium:'Citi Field',lf:335,cf:405,rf:330,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Standard modern park'},
+  {team:'NYY',stadium:'Yankee Stadium',lf:318,cf:408,rf:314,lfWall:'8',rfWall:'8',hitter:'S, SW (huge RF boost)',pitcher:'N, NE',notes:'Short RF porch'},
+  {team:'ATH',stadium:'Sutter Health Park (temp)',lf:330,cf:403,rf:325,lfWall:'8–12',rfWall:'8–12',hitter:'S, SW',pitcher:'N, NE',notes:'2026 temp home – minor-league dimensions'},
+  {team:'PHI',stadium:'Citizens Bank Park',lf:330,cf:401,rf:329,lfWall:'8–13',rfWall:'8–13',hitter:'S, SW',pitcher:'N, NE',notes:'No dimension changes 2026; hosting MLB All-Star Game'},
+  {team:'PIT',stadium:'PNC Park',lf:325,cf:399,rf:320,lfWall:'21 (Clemente)',rfWall:'21',hitter:'S, SW',pitcher:'N, NE',notes:'Beautiful river park'},
+  {team:'SDP',stadium:'Petco Park',lf:336,cf:396,rf:322,lfWall:'8–11',rfWall:'8–11',hitter:'S, SW (marine layer)',pitcher:'N, NE',notes:'Deep gaps'},
+  {team:'SEA',stadium:'T-Mobile Park',lf:331,cf:405,rf:327,lfWall:'8',rfWall:'8',hitter:'S, SW (when roof open)',pitcher:'N, NE',notes:'Retractable roof + marine air'},
+  {team:'SFG',stadium:'Oracle Park',lf:339,cf:399,rf:309,lfWall:'8–25',rfWall:'8–25',hitter:'S, SW (bay wind often blows in)',pitcher:'N, NE',notes:'Short RF porch + bay wind'},
+  {team:'STL',stadium:'Busch Stadium',lf:336,cf:400,rf:335,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Standard'},
+  {team:'TBR',stadium:'Tropicana Field (2026)',lf:315,cf:404,rf:322,lfWall:'8–15',rfWall:'8–15',hitter:'S, SW (when roof open)',pitcher:'N, NE',notes:'Dome – roof usually closed'},
+  {team:'TEX',stadium:'Globe Life Field',lf:329,cf:407,rf:326,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Retractable roof'},
+  {team:'TOR',stadium:'Rogers Centre',lf:328,cf:400,rf:328,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Symmetric retractable roof'},
+  {team:'WSN',stadium:'Nationals Park',lf:336,cf:403,rf:335,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'Standard'},
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let allData={}, gameTimes={}, openTeam=null;
+
+// ── COLOR RULES (unchanged) ──────────────────────────────────────────────────
+function colTemp(t){if(t>=95||t<=40)return'col-red';if(t>=85)return'col-yellow';return'col-green';}
+function colHumid(h){if(h<50)return'col-red';if(h<=60)return'col-yellow';if(h<=70)return'col-dull';return'col-green';}
+function colPressure(p){if(p>1020)return'col-red';if(p>=1015)return'col-yellow';if(p>=1010)return'col-dull';return'col-green';}
+function colWind(s){if(s<=5.9)return'col-red';if(s<=12.9)return'col-yellow';if(s<=19.9)return'col-dull';return'col-green';}
+function colGusts(g){if(g<=10.9)return'col-red';if(g<=18.9)return'col-yellow';if(g<=25)return'col-dull';return'col-green';}
+function colPrecip(p){if(p<20)return'col-green';if(p<40)return'col-yellow';return'col-red';}
+function tCol(t){return t>=95||t<=40?'col-red':t>=85?'col-yellow':'col-green';}
+function wColRow(s){return s<=5.9?'col-red':s<=12.9?'col-yellow':s<=19.9?'col-dull':'col-green';}
+function pColRow(p){return p<20?'col-green':p<40?'col-yellow':'col-red';}
+
+const cardinal=d=>['N','NE','E','SE','S','SW','W','NW'][Math.round(d/45)%8];
+
+// ── LAZY FETCH PATCH (only load weather when team is opened) ─────────────────
+function nowEST(){
+  return new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+}
+function fmtEST(date){
+  return date.toLocaleString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit',hour12:true,month:'short',day:'numeric'});
+}
+
+async function fetchTeamData(abbr){
+  if(allData[abbr] && !allData[abbr].err) return;
+  const team=TEAMS.find(t=>t.abbr===abbr);
+  if(!team) return;
+  // timezone=auto returns times in the stadium's LOCAL timezone — matches Google Script exactly
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${team.lat}&longitude=${team.lon}`
+  +`&hourly=temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m,`
+  +`wind_direction_10m,wind_gusts_10m,apparent_temperature,precipitation_probability,precipitation`
+  +`&timezone=auto&forecast_days=1&wind_speed_unit=mph&temperature_unit=fahrenheit`;
+  try{
+  const json=await fetch(url).then(r=>r.json());
+  const h=json.hourly; const hours=[]; let added=0;
+  for(let i=0;i<h.time.length && added<14;i++){
+  const t=new Date(h.time[i]);
+  if(t.getHours()<10) continue;
+  hours.push({
+  time:t, temp:Math.round(h.temperature_2m[i]), feels:Math.round(h.apparent_temperature[i]),
+  humid:h.relative_humidity_2m[i], pressure:Math.round(h.surface_pressure[i]),
+  wSpeed:Math.round(h.wind_speed_10m[i]), wDir:h.wind_direction_10m[i],
+  wCard:cardinal(h.wind_direction_10m[i]), gusts:Math.round(h.wind_gusts_10m[i]),
+  pPct:h.precipitation_probability[i], pIn:h.precipitation[i],
+  });
+  added++;
+  }
+  allData[abbr]={abbr,hours,err:false};
+  const el=document.getElementById('last-updated');
+  if(el) el.textContent='Last refreshed: '+fmtEST(new Date())+' EST';
+  }catch{allData[abbr]={abbr,hours:[],err:true};}
+}
+
+// ── 2026 NOTES HELPER ────────────────────────────────────────────────────────
+function getNotes(abbr){
+  const entry=CHEAT.find(c=>c.team===abbr);
+  return entry?entry.notes:'No 2026 notes available';
+}
+
+// ── STADIUM CHEAT SHEET ROW (appears after game time) ────────────────────────
+function buildStadiumCheatSummary(abbr){
+  const row=CHEAT.find(r=>r.team===abbr);
+  if(!row) return '';
+  return `<div class="cheat-summary">
+  <div class="cheat-summary-title">🏟️ STADIUM CHEAT SHEET — ${row.stadium}</div>
+  <div class="cheat-summary-grid">
+  <div><div class="cheat-summary-label">LF</div><div class="cheat-summary-value">${row.lf} ft</div></div>
+  <div><div class="cheat-summary-label">CF</div><div class="cheat-summary-value">${row.cf} ft</div></div>
+  <div><div class="cheat-summary-label">RF</div><div class="cheat-summary-value">${row.rf} ft</div></div>
+  <div><div class="cheat-summary-label">LF Wall</div><div class="cheat-summary-value">${row.lfWall} ft</div></div>
+  <div><div class="cheat-summary-label">RF Wall</div><div class="cheat-summary-value">${row.rfWall} ft</div></div>
+  <div><div class="cheat-summary-label">Hitter-Friendly Winds</div><div class="cheat-summary-value">${row.hitter}</div></div>
+  <div><div class="cheat-summary-label">Pitcher-Friendly Winds</div><div class="cheat-summary-value">${row.pitcher}</div></div>
+  </div>
+  <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border2);">
+  <div class="cheat-summary-label">2026 NOTES / QUICK RULES</div>
+  <div style="color:var(--text);line-height:1.5;">${row.notes}</div>
+  </div>
+  </div>`;
+}
+
+// ── WINDOW CARD (2026 notes at bottom of each diagram) ───────────────────────
+function buildWindowCard(abbr,offsetMins,label,isGame){
+  const gt=gameTimes[abbr];
+  const parsed=parseGameTime(gt);
+  if(parsed==null) return '';
+  const targetMins=parsed+offsetMins;
+  const h=getHourData(abbr,targetMins);
+  const timeLabel=minToLabel(targetMins);
+  const gc=isGame?'game-time-card':'';
+  if(!h) return `<div class="window-card ${gc} no-data"><div class="wc-label"><div class="dot"></div>${label}</div><div class="wc-time">${timeLabel}</div><div class="wc-no-data">No data for this window</div></div>`;
+  const windPct=Math.min((h.wSpeed/35)*100,100);
+  return `<div class="window-card ${gc}">
+  <div class="wc-label"><div class="dot"></div>${label}</div>
+  <div class="wc-time">${timeLabel}</div>
+  <div class="wc-temp ${colTemp(h.temp)}">${h.temp}°F</div>
+  <div class="wc-feels">Feels like ${h.feels}°F</div>
+  <div class="wc-stat"><span class="wc-stat-l">Humidity</span><div style="text-align:right"><div class="wc-stat-v ${colHumid(h.humid)}">${h.humid}%</div></div></div>
+  <div class="wc-stat"><span class="wc-stat-l">Pressure</span><div style="text-align:right"><div class="wc-stat-v ${colPressure(h.pressure)}">${h.pressure} <span style="font-size:13px;font-weight:400">hPa</span></div></div></div>
+  <div class="wc-stat"><span class="wc-stat-l">Wind</span><div style="text-align:right"><div class="wc-stat-v ${colWind(h.wSpeed)}">${h.wSpeed} mph</div><div class="wc-stat-sub">${h.wCard} · ${h.wDir}°</div></div></div>
+  <div class="wc-stat"><span class="wc-stat-l">Gusts</span><div style="text-align:right"><div class="wc-stat-v ${colGusts(h.gusts)}">${h.gusts} mph</div></div></div>
+  <div class="wc-stat"><span class="wc-stat-l">Rain %</span><div style="text-align:right"><div class="wc-stat-v ${colPrecip(h.pPct)}">${h.pPct}%</div><div class="wc-stat-sub">${h.pIn}" precip</div></div></div>
+  <div class="wc-wind-bar"><div class="wc-wind-fill" style="width:${windPct}%"></div></div>
+  <div class="wc-notes">
+  <div class="wc-notes-label">2026 NOTES / QUICK RULES</div>
+  ${getNotes(abbr)}
+  </div>
+  </div>`;
+}
+
+function buildExpandPanel(abbr){
+  const gt=gameTimes[abbr]||'';
+  const parsed=parseGameTime(gt);
+  const hasTime=parsed!=null;
+  const windows=hasTime?`<div class="windows-grid">
+  ${buildWindowCard(abbr,-60,'1H Before',false)}
+  ${buildWindowCard(abbr,0,'First Pitch',true)}
+  ${buildWindowCard(abbr,60,'+1 Hour',false)}
+  ${buildWindowCard(abbr,120,'+2 Hours',false)}
+  ${buildWindowCard(abbr,180,'+3 Hours',false)}
+  </div>`:`<div class="no-time-prompt">Enter a game time above to see the <span>5-window forecast</span></div>`;
+  const cheatSection = hasTime ? buildStadiumCheatSummary(abbr) : '';
+  return `<div class="expand-panel">
+  <div class="time-entry">
+  <label>⏱ Game Time</label>
+  <input class="time-input" id="ti-${abbr}" type="text" placeholder="7:05 PM" value="${gt}"
+  onkeydown="if(event.key==='Enter')setTime('${abbr}')"
+  oninput="liveUpdate('${abbr}')"/>
+  ${gt?`<button class="clear-btn" onclick="clearTime('${abbr}')">Clear</button>`:''}
+  <span class="time-hint">e.g. 7:05 PM · 1:10 PM · 13:10</span>
+  <span class="tz-note">⚠️ Enter time in the <strong>home team's local timezone</strong> — ${TEAMS.find(t=>t.abbr===abbr)?.tz||'local'}</span>
+  </div>
+  <div id="windows-${abbr}">${windows}</div>
+  ${cheatSection}
+  </div>`;
+}
+
+// ── TIME PARSING (unchanged) ─────────────────────────────────────────────────
+function parseGameTime(str){if(!str)return null;str=str.trim().toUpperCase();let h,m=0,isPM=str.includes('PM'),isAM=str.includes('AM');str=str.replace(/[APM\s]/g,'');if(str.includes(':'))[h,m]=str.split(':').map(Number);else if(str.length<=2)h=Number(str);else{h=Number(str.slice(0,-2));m=Number(str.slice(-2));}if(isNaN(h))return null;if(isPM&&h<12)h+=12;if(isAM&&h===12)h=0;if(!isPM&&!isAM&&h<10)h+=12;return h*60+m;}
+function minToLabel(mins){if(mins==null)return'—';let h=Math.floor(mins/60)%24,m=mins%60;const ap=h>=12?'PM':'AM';const d=h>12?h-12:(h===0?12:h);return`${d}:${String(m).padStart(2,'0')} ${ap} EST`;}
+function getHourData(abbr,targetMins){const d=allData[abbr];if(!d||d.err||!d.hours.length)return null;const th=Math.floor(targetMins/60)%24;return d.hours.find(h=>h.time.getHours()===th)||null;}
+
+// ── TABLE RENDER (unchanged) ─────────────────────────────────────────────────
+function renderTable(){
+  const q=document.getElementById('search').value.toLowerCase().trim();
+  const divF=document.getElementById('div-filter').value;
+  const sortK=document.getElementById('sort').value;
+  let data=TEAMS.filter(t=>{
+  const mQ=!q||t.abbr.toLowerCase().includes(q)||t.stadium.toLowerCase().includes(q);
+  const mD=divF==='all'||t.division===divF;
+  return mQ&&mD;
+  });
+  if(sortK==='game') data.sort((a,b)=>{
+  const ga=parseGameTime(gameTimes[a.abbr])??9999;
+  const gb=parseGameTime(gameTimes[b.abbr])??9999;
+  return ga-gb||a.abbr.localeCompare(b.abbr);
+  }); else data.sort((a,b)=>a.abbr.localeCompare(b.abbr));
+
+  document.getElementById('status-pill').innerHTML=`<b>${data.length}</b> stadiums`;
+  if(!data.length){document.getElementById('tbody').innerHTML=`<tr class="empty-row"><td colspan="8">No stadiums match</td></tr>`;return;}
+
+  document.getElementById('tbody').innerHTML=data.map((t,idx)=>{
+  const d=allData[t.abbr];
+  const now=d?.hours?.[0]||null;
+  const gt=gameTimes[t.abbr];
+  const isOpen=openTeam===t.abbr;
+  const badge=`<span class="team-badge" style="background:${t.color}">${t.abbr}</span>`;
+  const tempStr=now?`<span class="summary-temp ${tCol(now.temp)}">${now.temp}°F</span>`:'<span style="color:var(--muted)">—</span>';
+  const windStr=now?`<span style="font-weight:600" class="${wColRow(now.wSpeed)}">${now.wSpeed} mph ${now.wCard}</span>`:'—';
+  const precipStr=now?`<span style="font-weight:600" class="${pColRow(now.pPct)}">${now.pPct}%</span>`:'—';
+  const gtStr=gt?`<span class="has-game">⚾ ${gt.toUpperCase()}</span>`:`<span class="no-game">no game set</span>`;
+  const coordStr=`<a class="coord-link" href="https://www.google.com/maps?q=${t.lat},${t.lon}" target="_blank" onclick="event.stopPropagation()">${t.lat}, ${t.lon}</a>`;
+  return `
+  <tr class="team-row${isOpen?' open':''}" id="tr-${t.abbr}" style="animation-delay:${idx*.02}s" onclick="toggleTeam('${t.abbr}')">
+  <td>${badge}</td>
+  <td><div class="stadium-name">${t.stadium}</div><div class="stadium-div">${t.division}</div></td>
+  <td>${gtStr}</td><td>${tempStr}</td><td>${windStr}</td><td>${precipStr}</td>
+  <td>${coordStr}</td>
+  <td><span class="expand-arrow">▼</span></td>
+  </tr>
+  <tr class="expand-row${isOpen?' open':''}" id="er-${t.abbr}">
+  <td colspan="8">${isOpen?buildExpandPanel(t.abbr):''}</td>
+  </tr>`;
+  }).join('');
+}
+
+// ── CHEAT SHEET RENDER (unchanged) ───────────────────────────────────────────
+function renderCheat(){
+  const q=document.getElementById('cheat-search').value.toLowerCase().trim();
+  const data=CHEAT.filter(r=>!q||r.team.toLowerCase().includes(q)||r.stadium.toLowerCase().includes(q));
+  const teamMap=Object.fromEntries(TEAMS.map(t=>[t.abbr,t.color]));
+  document.getElementById('cheat-tbody').innerHTML=data.map(r=>{
+  const color=teamMap[r.team]||'#333';
+  const badge=`<span class="team-badge" style="background:${color}">${r.team}</span>`;
+  return `<tr>
+  <td>${badge}</td>
+  <td><div class="stadium-name" style="font-size:13px">${r.stadium}</div></td>
+  <td class="dim-val">${r.lf}</td><td class="dim-val">${r.cf}</td><td class="dim-val">${r.rf}</td>
+  <td class="dim-val">${r.lfWall}</td><td class="dim-val">${r.rfWall}</td>
+  <td><span class="wind-friendly">${r.hitter}</span></td>
+  <td><span class="wind-pitcher">${r.pitcher}</span></td>
+  <td class="notes">${r.notes}</td>
+  </tr>`;
+  }).join('');
+}
+
+// ── INTERACTIONS (toggle now uses lazy fetch) ────────────────────────────────
+function toggleTeam(abbr){
+  const prev=openTeam;
+  openTeam=openTeam===abbr?null:abbr;
+  if(openTeam) fetchTeamData(abbr);   // ← LAZY LOADING PATCH (fixes GitHub stuck loading)
+  renderTable();
+  if(openTeam) setTimeout(()=>{document.getElementById(`tr-${abbr}`)?.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
+}
+function setTime(abbr){
+  const val=document.getElementById(`ti-${abbr}`)?.value?.trim();
+  if(val) gameTimes[abbr]=val; else delete gameTimes[abbr];
+  const cell=document.querySelector(`#er-${abbr} td`);
+  if(cell) cell.innerHTML=buildExpandPanel(abbr);
+  updateRowGT(abbr);
+}
+function clearTime(abbr){
+  delete gameTimes[abbr];
+  const cell=document.querySelector(`#er-${abbr} td`);
+  if(cell) cell.innerHTML=buildExpandPanel(abbr);
+  updateRowGT(abbr);
+}
+function liveUpdate(abbr){
+  clearTimeout(liveUpdate._t);
+  liveUpdate._t=setTimeout(()=>{
+  const val=document.getElementById(`ti-${abbr}`)?.value?.trim();
+  if(val) gameTimes[abbr]=val;
+  const win=document.getElementById(`windows-${abbr}`);
+  if(!win) return;
+  const parsed=parseGameTime(val);
+  if(parsed!=null) win.innerHTML=`<div class="windows-grid">
+  ${buildWindowCard(abbr,-60,'1H Before',false)}
+  ${buildWindowCard(abbr,0,'First Pitch',true)}
+  ${buildWindowCard(abbr,60,'+1 Hour',false)}
+  ${buildWindowCard(abbr,120,'+2 Hours',false)}
+  ${buildWindowCard(abbr,180,'+3 Hours',false)}
+  </div>`;
+  else win.innerHTML=`<div class="no-time-prompt">Enter a game time above to see the <span>5-window forecast</span></div>`;
+  },350);
+}
+function updateRowGT(abbr){
+  const gt=gameTimes[abbr];
+  const cell=document.querySelector(`#tr-${abbr} td:nth-child(3)`);
+  if(!cell) return;
+  cell.innerHTML=gt?`<span class="has-game">⚾ ${gt.toUpperCase()}</span>`:`<span class="no-game">no game set</span>`;
+}
+
+// ── TAB SWITCHING (unchanged) ────────────────────────────────────────────────
+function switchTab(tab){
+  document.getElementById('weather-view').style.display = tab==='weather'?'block':'none';
+  document.getElementById('cheat-view').style.display   = tab==='cheat'?'block':'none';
+  document.getElementById('legend-view').style.display  = tab==='legend'?'block':'none';
+  ['weather','cheat','legend'].forEach(t=>{
+  document.getElementById(`tab-${t}`).classList.toggle('active', t===tab);
+  });
+  if(tab==='cheat') renderCheat();
+}
+
+// ── FETCH (lazy version) ─────────────────────────────────────────────────────
+async function fetchTeam(team){ /* original fetchTeam kept for compatibility */ }
+
+// ── REFRESH BUTTON ────────────────────────────────────────────────────────────
+async function loadAll(){
+  const btn=document.getElementById('refresh-btn');
+  const icon=document.getElementById('ref-icon');
+  btn.disabled=true;
+  icon.classList.add('spin');
+
+  // Clear all cached data so everything re-fetches fresh
+  const loadedAbbrs=Object.keys(allData);
+  allData={};
+
+  // Re-fetch every team that was previously loaded
+  await Promise.all(loadedAbbrs.map(abbr=>fetchTeamData(abbr)));
+
+  // If a team is open, re-render its expand panel with fresh data
+  if(openTeam){
+    const cell=document.querySelector(`#er-${openTeam} td`);
+    if(cell) cell.innerHTML=buildExpandPanel(openTeam);
+  }
+
+  renderTable();
+  icon.classList.remove('spin');
+  btn.disabled=false;
+}
+
+// Dismiss loading overlay immediately (lazy loading is in toggleTeam)
+document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.getElementById('overlay');
+  if(overlay) overlay.classList.add('gone');
+  renderTable();
+});
+</script>
+</body>
+</html>
