@@ -1,0 +1,1277 @@
+<DOCUMENT filename="index.html"><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MLB WEATHER HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#080b10; --surface:#0d1219; --panel:#111820; --border:#1c2533; --border2:#243040;
+  --text:#dce8f5; --muted:#4a6080; --dim:#2a3a50; --accent:#f0c040;
+  --c-red:#ff4545; --c-yellow:#f0c040; --c-dull:#6fcf60; --c-green:#30d98a;
+  --blue:#3b9bff; --orange:#ff8c30;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* ── HEADER ── */
+.site-header{
+  background:linear-gradient(180deg,#050810,#080b10);
+  border-bottom:2px solid var(--accent);
+  padding:0 32px; position:sticky; top:0; z-index:200;
+  display:flex; align-items:stretch; justify-content:space-between;
+  box-shadow:0 4px 40px rgba(240,192,64,0.08);
+}
+.header-brand{display:flex;align-items:center;gap:16px;padding:14px 0;}
+.brand-icon{width:46px;height:46px;background:var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:22px;transform:rotate(-3deg);box-shadow:0 0 20px rgba(240,192,64,0.4);}
+.brand-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:32px;letter-spacing:3px;text-transform:uppercase;color:#fff;}
+.brand-title em{color:var(--accent);font-style:normal;}
+.brand-sub{font-size:10px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-top:3px;}
+.header-right{display:flex;align-items:center;gap:16px;}
+.live-badge{display:flex;align-items:center;gap:7px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;color:var(--c-red);text-transform:uppercase;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--c-red);animation:pulse-dot 1.4s ease-in-out infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.refresh-btn{background:var(--accent);color:#000;border:none;border-radius:4px;padding:10px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s;}
+.refresh-btn:hover{background:#ffd060;transform:translateY(-1px);}
+.refresh-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+.spin{animation:spin .9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+#last-updated{font-size:12px;color:var(--muted);}
+
+/* ── TICKER ── */
+.ticker-bar{background:var(--accent);padding:6px 0;overflow:hidden;white-space:nowrap;}
+.ticker-inner{display:inline-block;animation:ticker 40s linear infinite;}
+.ticker-inner span{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;color:#000;text-transform:uppercase;padding:0 28px;}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── TABS ── */
+.tab-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;display:flex;gap:0;}
+.tab-btn{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:14px 22px;border:none;background:transparent;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;margin-bottom:-1px;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* ── CONTROLS ── */
+.controls-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.search-wrap{position:relative;}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+.search-input{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:9px 14px 9px 36px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;width:210px;outline:none;transition:border-color .2s;}
+.search-input:focus{border-color:var(--accent);}
+.search-input::placeholder{color:var(--muted);}
+.ctrl-select{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:9px 14px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;cursor:pointer;outline:none;}
+.divider{width:1px;height:28px;background:var(--border2);flex-shrink:0;}
+.ctrl-label{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.status-pill{margin-left:auto;background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:6px 14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;color:var(--muted);}
+.status-pill b{color:var(--accent);}
+
+/* ── TABLE ── */
+.table-wrap{padding:20px 32px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:700px;}
+thead tr{background:var(--panel);border-bottom:2px solid var(--border2);}
+th{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:12px 16px;text-align:left;white-space:nowrap;user-select:none;}
+tbody tr.team-row{border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;}
+tbody tr.team-row:hover{background:rgba(240,192,64,0.04);}
+tbody tr.team-row.open{background:rgba(240,192,64,0.06);border-bottom:none;}
+td{padding:12px 16px;vertical-align:middle;white-space:nowrap;}
+.team-badge{display:inline-flex;align-items:center;justify-content:center;width:54px;height:28px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:14px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.6);}
+.stadium-name{font-weight:500;font-size:14px;}
+.stadium-div{font-size:11px;color:var(--muted);margin-top:1px;}
+.summary-temp{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:20px;}
+.no-game{font-size:12px;color:var(--dim);font-style:italic;}
+.has-game{font-size:13px;font-weight:700;color:var(--accent);font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;}
+.coord-link{font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:0.5px;color:var(--blue);text-decoration:none;white-space:nowrap;padding:3px 6px;border:1px solid rgba(59,155,255,0.25);border-radius:3px;transition:all .15s;}
+.coord-link:hover{color:#fff;background:rgba(59,155,255,0.18);border-color:var(--blue);}
+.expand-arrow{font-size:12px;color:var(--muted);transition:transform .25s;display:inline-block;}
+.open .expand-arrow{transform:rotate(180deg);color:var(--accent);}
+tr.expand-row{display:none;}
+tr.expand-row.open{display:table-row;}
+tr.expand-row td{padding:0;border-bottom:2px solid var(--accent);}
+
+/* ── EXPAND PANEL ── */
+.expand-panel{background:var(--surface);padding:20px 24px 24px;border-top:1px solid var(--border2);animation:slideDown .2s ease;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.time-entry{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border2);}
+.time-entry label{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.time-input{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:8px 14px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;width:110px;outline:none;text-align:center;transition:border-color .2s;}
+.time-input:focus{border-color:var(--accent);}
+.time-input::placeholder{color:var(--dim);font-size:14px;}
+.clear-btn{background:transparent;color:var(--muted);border:1px solid var(--border2);border-radius:4px;padding:8px 14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+.clear-btn:hover{border-color:var(--c-red);color:var(--c-red);}
+.time-hint{font-size:12px;color:var(--dim);}
+.tz-note{font-size:13px;color:var(--c-yellow);background:rgba(240,192,64,0.08);border:1px solid rgba(240,192,64,0.25);border-radius:4px;padding:5px 12px;white-space:nowrap;}
+
+/* ── WEATHER WINDOWS ── */
+.windows-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+
+.window-card{background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:12px 10px;position:relative;transition:border-color .15s;}
+.window-card.game-time-card{border-color:var(--accent);box-shadow:0 0 20px rgba(240,192,64,0.14);}
+.window-card.no-data{opacity:0.4;}
+.window-card.roof-closed{opacity:0.75;border-color:#ff4545;}
+
+.wc-label{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px;color:var(--muted);}
+.wc-label .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.game-time-card .wc-label{color:var(--accent);}
+.game-time-card .wc-label .dot{background:var(--accent);}
+.wc-time{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;color:var(--muted);margin-bottom:14px;}
+
+/* BIG values inside window cards */
+.wc-temp{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:34px;line-height:1;margin-bottom:2px;}
+.wc-feels{font-size:12px;color:var(--muted);margin-bottom:10px;}
+
+.wc-stat{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.wc-stat:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.wc-stat-l{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;}
+.wc-stat-v{font-size:15px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;}
+.wc-stat-sub{font-size:10px;color:var(--muted);text-align:right;margin-top:1px;}
+
+/* Roof indicator */
+.roof-badge{
+  display:flex;align-items:center;gap:6px;background:rgba(255,69,69,0.15);color:#ff4545;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:1px;
+  padding:4px 10px;border-radius:4px;margin-top:8px;
+}
+
+/* Wind direction diagram */
+.wind-diagram{
+  width:96px;height:96px;position:relative;margin:8px auto 4px;
+  background:#0c1822;border-radius:50%;border:2px solid var(--border2);
+  overflow:hidden;
+}
+.wind-diagram svg{width:100%;height:100%;display:block;}
+
+.wc-wind-bar{background:var(--dim);border-radius:2px;height:4px;margin-top:10px;}
+.wc-wind-fill{height:4px;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--accent));}
+
+/* ── COMPACT CHEAT ROW (below 5 windows) ── */
+.cheat-row-compact{background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:14px 16px;}
+.cheat-row-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+.cheat-row-grid{display:flex;flex-wrap:wrap;gap:6px 20px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border2);}
+.cheat-row-grid > div{display:flex;flex-direction:column;gap:2px;}
+.cheat-row-grid .crc-wide{flex:1;min-width:160px;}
+.crc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.crc-val{font-size:14px;font-weight:700;font-family:'Barlow Condensed',sans-serif;color:var(--text);}
+.crc-hitter{color:var(--c-green);}
+.crc-pitcher{color:var(--c-red);}
+.crc-notes{font-size:13px;line-height:1.6;color:var(--text);}
+
+/* 2026 NOTES / QUICK RULES – bottom of EVERY diagram */
+.wc-notes{margin-top:18px;padding-top:12px;border-top:1px solid var(--border2);font-size:15px;line-height:1.6;color:var(--text);font-weight:500;}
+.wc-notes-label{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+
+.wc-no-data{font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:1px;color:var(--dim);text-align:center;padding:24px 0;}
+.no-time-prompt{text-align:center;padding:32px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;color:var(--dim);}
+.no-time-prompt span{color:var(--accent);}
+
+/* Stadium Cheat Sheet row (now always shown in dashboard) */
+.cheat-summary{background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:16px;margin-top:24px;}
+.cheat-summary-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
+.cheat-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;font-size:13px;}
+.cheat-summary-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.cheat-summary-value{font-weight:700;color:var(--text);}
+
+/* color classes */
+.col-red   {color:var(--c-red)!important;}
+.col-yellow{color:var(--c-yellow)!important;}
+.col-dull  {color:var(--c-dull)!important;}
+.col-green {color:var(--c-green)!important;}
+
+/* ── CHEAT SHEET TAB ── */
+#cheat-view{display:none;padding:24px 32px;}
+.cheat-search-bar{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.cheat-search{background:var(--panel);border:1px solid var(--border2);border-radius:4px;padding:9px 16px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;width:240px;outline:none;transition:border-color .2s;}
+.cheat-search:focus{border-color:var(--accent);}
+.cheat-search::placeholder{color:var(--muted);}
+
+.cheat-table-wrap{overflow-x:auto;}
+.cheat-table{width:100%;border-collapse:collapse;min-width:900px;}
+.cheat-table thead tr{background:var(--panel);border-bottom:2px solid var(--border2);}
+.cheat-table th{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:12px 14px;text-align:left;white-space:nowrap;}
+.cheat-table tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
+.cheat-table tbody tr:hover{background:rgba(255,255,255,0.02);}
+.cheat-table td{padding:11px 14px;font-size:13px;vertical-align:top;}
+.cheat-table td.notes{white-space:normal;max-width:320px;line-height:1.5;font-size:12px;color:var(--muted);}
+.wind-friendly{color:var(--c-green);font-weight:600;font-size:12px;}
+.wind-pitcher{color:var(--c-red);font-weight:600;font-size:12px;}
+.dim-val{color:var(--muted);}
+
+/* ── LEGEND ── */
+.legend-section{margin-bottom:28px;}
+.legend-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border2);}
+.legend-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:20px;}
+.legend-card{background:var(--panel);border:1px solid var(--border2);border-radius:6px;padding:14px 16px;}
+.legend-card-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;color:var(--text);}
+.legend-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.legend-row:last-child{border-bottom:none;}
+.legend-swatch{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-right:8px;}
+.legend-left{display:flex;align-items:center;}
+.legend-range{color:var(--muted);font-size:12px;}
+.swatch-red   {background:var(--c-red);}
+.swatch-yellow{background:var(--c-yellow);}
+.swatch-dull  {background:var(--c-dull);}
+.swatch-green {background:var(--c-green);}
+
+/* ── LOADING ── */
+#overlay{position:fixed;inset:0;background:rgba(8,11,16,0.92);backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:20px;transition:opacity .4s;}
+#overlay.gone{opacity:0;pointer-events:none;}
+.ov-ring{width:56px;height:56px;border:4px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .85s linear infinite;}
+.ov-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;letter-spacing:4px;text-transform:uppercase;}
+.ov-sub{font-size:13px;color:var(--muted);}
+.ov-prog{width:280px;height:3px;background:var(--border2);border-radius:2px;overflow:hidden;}
+.ov-fill{height:100%;background:var(--accent);border-radius:2px;width:0%;transition:width .3s;}
+.empty-row td{text-align:center;padding:60px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:1px;}
+
+/* ── WIND CHEAT ROW (under the 5 windows, below stadium cheat sheet) ── */
+.wind-cheat-row{background:var(--panel);border:1px solid var(--border2);border-radius:8px;padding:14px 16px;margin-top:10px;}
+.wind-cheat-row-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#3b9bff;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.wind-windows-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.wind-window-card{background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:10px 8px;min-height:80px;}
+.wind-window-card.game-wind{border-color:#3b9bff;box-shadow:0 0 12px rgba(59,155,255,0.12);}
+.wind-window-card.no-wind{opacity:0.4;}
+.wwc-dir{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:16px;letter-spacing:1px;margin-bottom:2px;}
+.wwc-blows{font-size:10px;color:var(--muted);margin-bottom:6px;line-height:1.3;}
+.wwc-impact{font-size:11px;line-height:1.4;color:var(--text);margin-bottom:5px;}
+.wwc-level{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:3px;display:inline-block;margin-top:2px;}
+.wwc-level.lvl-hitter-strong{color:var(--c-green);background:rgba(48,217,138,0.1);}
+.wwc-level.lvl-hitter{color:var(--c-dull);background:rgba(111,207,96,0.1);}
+.wwc-level.lvl-hitter-mild{color:var(--c-yellow);background:rgba(240,192,64,0.1);}
+.wwc-level.lvl-pitcher-mild{color:var(--c-yellow);background:rgba(240,192,64,0.1);}
+.wwc-level.lvl-pitcher{color:#ff8c30;background:rgba(255,140,48,0.1);}
+.wwc-level.lvl-pitcher-strong{color:var(--c-red);background:rgba(255,69,69,0.1);}
+
+/* ── WIND CHEAT SHEET TAB ── */
+#wind-view{display:none;padding:24px 32px;}
+.wind-table-wrap{overflow-x:auto;}
+.wind-table{width:100%;border-collapse:collapse;min-width:900px;}
+.wind-table thead tr{background:var(--panel);border-bottom:2px solid var(--border2);}
+.wind-table th{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:12px 14px;text-align:left;white-space:nowrap;}
+.wind-table tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
+.wind-table tbody tr:hover{background:rgba(255,255,255,0.02);}
+.wind-table td{padding:10px 14px;font-size:13px;vertical-align:middle;}
+.wind-table td.wind-impact-cell{white-space:normal;max-width:280px;line-height:1.45;font-size:12px;color:var(--muted);}
+.wind-team-header td{background:rgba(59,155,255,0.06);border-top:2px solid rgba(59,155,255,0.2);padding:8px 14px;}
+.wind-dir-badge{display:inline-flex;align-items:center;justify-content:center;padding:3px 8px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:1px;background:var(--dim);color:var(--text);}
+.wind-blows-to{font-size:11px;color:var(--blue);margin-top:2px;}
+.wind-search-bar{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+
+@media(max-width:900px){
+  .windows-grid{grid-template-columns:1fr 1fr;}
+  .wind-windows-grid{grid-template-columns:1fr 1fr;}
+  .site-header{padding:0 16px;}
+  .controls-bar{padding:12px 16px;}
+  .table-wrap{padding:12px;}
+  #cheat-view{padding:16px;}
+  #wind-view{padding:16px;}
+}
+</style>
+</head>
+<body>
+
+<div id="overlay" style="display:none;">
+  <div class="ov-ring"></div>
+  <div class="ov-title">MLB Weather HQ</div>
+  <div class="ov-sub" id="ov-sub">Ready – click any team to load weather</div>
+</div>
+
+<header class="site-header">
+  <div class="header-brand">
+  <div class="brand-icon">⚾</div>
+  <div>
+  <div class="brand-title">MLB <em>Weather</em> HQ</div>
+  <div class="brand-sub">Click any team · Enter game time · See 5-window forecast</div>
+  </div>
+  </div>
+  <div class="header-right">
+  <div class="live-badge"><div class="live-dot"></div> Live</div>
+  <div id="last-updated"></div>
+  <button class="refresh-btn" id="refresh-btn" onclick="loadAll()">
+  <svg id="ref-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-3"/></svg>
+  Refresh
+  </button>
+  </div>
+</header>
+
+<div class="ticker-bar">
+  <div class="ticker-inner">
+  <span>⚾ MLB WEATHER HQ</span><span>·</span>
+  <span>ARI</span><span>ATL</span><span>BAL</span><span>BOS</span><span>CHC</span><span>CHW</span>
+  <span>CIN</span><span>CLE</span><span>COL</span><span>DET</span><span>HOU</span><span>KCR</span>
+  <span>LAA</span><span>LAD</span><span>MIA</span><span>MIL</span><span>MIN</span><span>NYM</span>
+  <span>NYY</span><span>ATH</span><span>PHI</span><span>PIT</span><span>SDP</span><span>SEA</span>
+  <span>SFG</span><span>STL</span><span>TBR</span><span>TEX</span><span>TOR</span><span>WSN</span>
+  <span>·</span><span>⚾ MLB WEATHER HQ</span><span>·</span>
+  <span>ARI</span><span>ATL</span><span>BAL</span><span>BOS</span><span>CHC</span><span>CHW</span>
+  <span>CIN</span><span>CLE</span><span>COL</span><span>DET</span><span>HOU</span><span>KCR</span>
+  <span>LAA</span><span>LAD</span><span>MIA</span><span>MIL</span><span>MIN</span><span>NYM</span>
+  <span>NYY</span><span>ATH</span><span>PHI</span><span>PIT</span><span>SDP</span><span>SEA</span>
+  <span>SFG</span><span>STL</span><span>TBR</span><span>TEX</span><span>TOR</span><span>WSN</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-weather" onclick="switchTab('weather')">⛅ Weather Dashboard</button>
+  <button class="tab-btn" id="tab-cheat" onclick="switchTab('cheat')">🏟️ Stadium Cheat Sheet</button>
+  <button class="tab-btn" id="tab-wind" onclick="switchTab('wind')">🌬️ Wind Cheat Sheet</button>
+  <button class="tab-btn" id="tab-legend" onclick="switchTab('legend')">🎨 Color Legend</button>
+</div>
+
+<!-- WEATHER VIEW (DASHBOARD) -->
+<div id="weather-view">
+  <div class="controls-bar">
+  <div class="search-wrap">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  <input class="search-input" id="search" type="text" placeholder="Search team or stadium…" oninput="renderTable()"/>
+  </div>
+  <div class="divider"></div>
+  <span class="ctrl-label">Division</span>
+  <select class="ctrl-select" id="div-filter" onchange="renderTable()">
+  <option value="all">All Teams</option>
+  <option value="AL East">AL East</option><option value="AL Central">AL Central</option><option value="AL West">AL West</option>
+  <option value="NL East">NL East</option><option value="NL Central">NL Central</option><option value="NL West">NL West</option>
+  </select>
+  <div class="divider"></div>
+  <span class="ctrl-label">Sort</span>
+  <select class="ctrl-select" id="sort" onchange="renderTable()">
+  <option value="alpha">Team A–Z</option>
+  <option value="game">Game Time</option>
+  </select>
+  <div class="status-pill" id="status-pill"><b>30</b> stadiums</div>
+  </div>
+  <div class="table-wrap">
+  <table id="main-table">
+  <thead>
+  <tr>
+  <th>Team</th><th>Stadium</th><th>Game Time</th>
+  <th>Curr Temp</th><th>Wind</th><th>Rain %</th><th>Coords</th><th></th>
+  </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+  </table>
+  </div>
+</div>
+
+<!-- CHEAT SHEET VIEW -->
+<div id="cheat-view">
+  <div class="cheat-search-bar">
+  <div class="search-wrap">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  <input class="cheat-search search-input" id="cheat-search" type="text" placeholder="Search team or stadium…" oninput="renderCheat()"/>
+  </div>
+  </div>
+  <div class="cheat-table-wrap">
+  <table class="cheat-table">
+  <thead>
+  <tr>
+  <th>Team</th><th>Stadium</th><th>LF</th><th>CF</th><th>RF</th>
+  <th>LF Wall</th><th>RF Wall</th><th>Hitter Winds</th><th>Pitcher Winds</th><th>2026 Notes</th>
+  </tr>
+  </thead>
+  <tbody id="cheat-tbody"></tbody>
+  </table>
+  </div>
+</div>
+
+<!-- WIND CHEAT SHEET VIEW -->
+<div id="wind-view">
+  <div class="wind-search-bar">
+  <div class="search-wrap">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  <input class="cheat-search search-input" id="wind-search" type="text" placeholder="Search team or stadium…" oninput="renderWind()"/>
+  </div>
+  <span style="font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;">All 8 wind directions · impact per stadium</span>
+  </div>
+  <div class="wind-table-wrap">
+  <table class="wind-table">
+  <thead>
+  <tr>
+  <th>Team</th><th>Stadium</th><th>Wind From</th><th>Blows Toward</th><th>Impact</th><th>Hitter / Pitcher Level</th>
+  </tr>
+  </thead>
+  <tbody id="wind-tbody"></tbody>
+  </table>
+  </div>
+</div>
+
+<!-- LEGEND VIEW -->
+<div id="legend-view" style="display:none;padding:24px 32px;">
+  <div class="legend-section">
+  <div class="legend-title">How to read the color codes</div>
+  <div class="legend-grid">
+
+  <div class="legend-card">
+  <div class="legend-card-title">🌡️ Temperature (°F)</div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-red"></div><span class="col-red">Hot / Cold Extreme</span></div><span class="legend-range">≥ 95°F or ≤ 40°F</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-yellow"></div><span class="col-yellow">Warm</span></div><span class="legend-range">85–94°F</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-green"></div><span class="col-green">Comfortable</span></div><span class="legend-range">41–84°F</span></div>
+  </div>
+
+  <div class="legend-card">
+  <div class="legend-card-title">💧 Humidity (%)</div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-red"></div><span class="col-red">Very Dry</span></div><span class="legend-range">&lt; 50%</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-yellow"></div><span class="col-yellow">Moderate</span></div><span class="legend-range">50–60%</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-dull"></div><span class="col-dull">Good</span></div><span class="legend-range">60–70%</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-green"></div><span class="col-green">Ideal</span></div><span class="legend-range">&gt; 70%</span></div>
+  </div>
+
+  <div class="legend-card">
+  <div class="legend-card-title">🔵 Pressure (hPa)</div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-red"></div><span class="col-red">High Pressure</span></div><span class="legend-range">&gt; 1020 hPa</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-yellow"></div><span class="col-yellow">Slightly High</span></div><span class="legend-range">1015–1020 hPa</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-dull"></div><span class="col-dull">Normal</span></div><span class="legend-range">1010–1015 hPa</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-green"></div><span class="col-green">Low Pressure</span></div><span class="legend-range">&lt; 1010 hPa</span></div>
+  </div>
+
+  <div class="legend-card">
+  <div class="legend-card-title">💨 Wind Speed (mph)</div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-red"></div><span class="col-red">Calm / No Carry</span></div><span class="legend-range">≤ 5.9 mph</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-yellow"></div><span class="col-yellow">Light</span></div><span class="legend-range">6–12.9 mph</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-dull"></div><span class="col-dull">Moderate</span></div><span class="legend-range">13–19.9 mph</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-green"></div><span class="col-green">Strong Carry</span></div><span class="legend-range">≥ 20 mph</span></div>
+  </div>
+
+  <div class="legend-card">
+  <div class="legend-card-title">💨 Wind Gusts (mph)</div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-red"></div><span class="col-red">Minimal Gusts</span></div><span class="legend-range">≤ 10.9 mph</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-yellow"></div><span class="col-yellow">Light Gusts</span></div><span class="legend-range">11–18.9 mph</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-dull"></div><span class="col-dull">Moderate Gusts</span></div><span class="legend-range">19–25 mph</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-green"></div><span class="col-green">Strong Gusts</span></div><span class="legend-range">≥ 25.1 mph</span></div>
+  </div>
+
+  <div class="legend-card">
+  <div class="legend-card-title">🌧️ Rain Probability (%)</div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-green"></div><span class="col-green">Clear</span></div><span class="legend-range">&lt; 20%</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-yellow"></div><span class="col-yellow">Possible</span></div><span class="legend-range">20–39%</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-red"></div><span class="col-red">Likely</span></div><span class="legend-range">40–69%</span></div>
+  <div class="legend-row"><div class="legend-left"><div class="legend-swatch swatch-red"></div><span class="col-red">Rain Game</span></div><span class="legend-range">≥ 70%</span></div>
+  </div>
+
+  </div>
+  </div>
+</div>
+
+<script>
+// ── TEAM DATA ────────────────────────────────────────────────────────────────
+const TEAMS=[
+  {abbr:'ARI',stadium:'Chase Field',lat:33.4454,lon:-112.0667,color:'#A71930',division:'NL West',tz:'MST',roofType:'retractable'},
+  {abbr:'ATL',stadium:'Truist Park',lat:33.8908,lon:-84.4682,color:'#CE1141',division:'NL East',tz:'ET',roofType:null},
+  {abbr:'BAL',stadium:'Oriole Park at Camden Yards',lat:39.2852,lon:-76.6201,color:'#DF4601',division:'AL East',tz:'ET',roofType:null},
+  {abbr:'BOS',stadium:'Fenway Park',lat:42.3466,lon:-71.0988,color:'#BD3039',division:'AL East',tz:'ET',roofType:null},
+  {abbr:'CHC',stadium:'Wrigley Field',lat:41.9484,lon:-87.6553,color:'#0E3386',division:'NL Central',tz:'CT',roofType:null},
+  {abbr:'CHW',stadium:'Guaranteed Rate Field',lat:41.8309,lon:-87.6351,color:'#27251F',division:'AL Central',tz:'CT',roofType:null},
+  {abbr:'CIN',stadium:'Great American Ball Park',lat:39.1072,lon:-84.5077,color:'#C6011F',division:'NL Central',tz:'ET',roofType:null},
+  {abbr:'CLE',stadium:'Progressive Field',lat:41.4951,lon:-81.6871,color:'#00385D',division:'AL Central',tz:'ET',roofType:null},
+  {abbr:'COL',stadium:'Coors Field',lat:39.756,lon:-104.9942,color:'#33006F',division:'NL West',tz:'MT',roofType:null},
+  {abbr:'DET',stadium:'Comerica Park',lat:42.3392,lon:-83.0488,color:'#0C2340',division:'AL Central',tz:'ET',roofType:null},
+  {abbr:'HOU',stadium:'Daikin Park',lat:29.7573,lon:-95.3556,color:'#002D62',division:'AL West',tz:'CT',roofType:'retractable'},
+  {abbr:'KCR',stadium:'Kauffman Stadium',lat:39.1022,lon:-94.5836,color:'#004687',division:'AL Central',tz:'CT',roofType:null},
+  {abbr:'LAA',stadium:'Angel Stadium',lat:33.8003,lon:-117.8827,color:'#BA0021',division:'AL West',tz:'PT',roofType:null},
+  {abbr:'LAD',stadium:'Dodger Stadium',lat:34.0736,lon:-118.2399,color:'#005A9C',division:'NL West',tz:'PT',roofType:null},
+  {abbr:'MIA',stadium:'loanDepot park',lat:25.7781,lon:-80.2196,color:'#00A3E0',division:'NL East',tz:'ET',roofType:'retractable'},
+  {abbr:'MIL',stadium:'American Family Field',lat:43.0281,lon:-87.9706,color:'#12284B',division:'NL Central',tz:'CT',roofType:'retractable'},
+  {abbr:'MIN',stadium:'Target Field',lat:44.9817,lon:-93.2785,color:'#002B5C',division:'AL Central',tz:'CT',roofType:null},
+  {abbr:'NYM',stadium:'Citi Field',lat:40.7571,lon:-73.8458,color:'#002D72',division:'NL East',tz:'ET',roofType:null},
+  {abbr:'NYY',stadium:'Yankee Stadium',lat:40.8296,lon:-73.9262,color:'#1D2D5B',division:'AL East',tz:'ET',roofType:null},
+  {abbr:'ATH',stadium:'Sutter Health Park',lat:38.5804,lon:-121.5138,color:'#006400',division:'AL West',tz:'PT',roofType:null},
+  {abbr:'PHI',stadium:'Citizens Bank Park',lat:39.9061,lon:-75.1665,color:'#E81828',division:'NL East',tz:'ET',roofType:null},
+  {abbr:'PIT',stadium:'PNC Park',lat:40.4615,lon:-80.0089,color:'#FDB827',division:'NL Central',tz:'ET',roofType:null},
+  {abbr:'SDP',stadium:'Petco Park',lat:32.7521,lon:-117.1436,color:'#2F241D',division:'NL West',tz:'PT',roofType:null},
+  {abbr:'SEA',stadium:'T-Mobile Park',lat:47.5915,lon:-122.3329,color:'#0C2C56',division:'AL West',tz:'PT',roofType:null},
+  {abbr:'SFG',stadium:'Oracle Park',lat:37.7799,lon:-122.3893,color:'#FD5A1E',division:'NL West',tz:'PT',roofType:null},
+  {abbr:'STL',stadium:'Busch Stadium',lat:38.6226,lon:-90.1928,color:'#C41E3A',division:'NL Central',tz:'CT',roofType:null},
+  {abbr:'TBR',stadium:'Tropicana Field',lat:27.7685,lon:-82.6482,color:'#092C5C',division:'AL East',tz:'ET',roofType:'dome'},
+  {abbr:'TEX',stadium:'Globe Life Field',lat:32.7475,lon:-97.0842,color:'#003278',division:'AL West',tz:'CT',roofType:'retractable'},
+  {abbr:'TOR',stadium:'Rogers Centre',lat:43.6417,lon:-79.3892,color:'#134A8E',division:'AL East',tz:'ET',roofType:'retractable'},
+  {abbr:'WSN',stadium:'Nationals Park',lat:38.8728,lon:-77.0075,color:'#AB0003',division:'NL East',tz:'ET',roofType:null},
+];
+
+// ── CHEAT SHEET DATA (3-5 detailed 2026 park factors + weather analysis for each stadium) ─────────────────────────────────────────────────────────
+const CHEAT=[
+  {team:'ARI',stadium:'Chase Field',lf:330,cf:407,rf:335,lfWall:'25',rfWall:'8',hitter:'S, SW, SE',pitcher:'N, NE',notes:'• Roof open + S/SW wind = biggest HR boost for hitters (balls carry 30+ ft)<br>• Closed roof = weather irrelevant (pitchers gain control, no wind carry)<br>• Extreme heat (>95°F) adds extra carry for hitters even with roof open<br>• Low humidity in desert air helps fly balls travel farther for hitters<br>• High rain % forces roof closure → instant pitcher advantage'},
+  {team:'ATL',stadium:'Truist Park',lf:335,cf:400,rf:325,lfWall:'25',rfWall:'25',hitter:'S, SW',pitcher:'N, NE',notes:'• South/SW winds blow out to LF/RF = strong hitter boost (more HR)<br>• North winds suppress fly balls = big pitcher edge<br>• Warm humid nights (>80°F) help balls carry for hitters<br>• Light rain or high humidity slightly reduces carry (pitcher friendly)<br>• No roof = full weather impact; wind direction is the #1 factor here'},
+  {team:'BAL',stadium:'Oriole Park at Camden Yards',lf:333,cf:410,rf:318,lfWall:'7',rfWall:'7',hitter:'S, SW',pitcher:'N, NE',notes:'• Short RF porch + S/SW wind = massive HR boost for right-handed hitters<br>• North winds blow in from CF = pitcher advantage, kills deep flies<br>• Mild temps (60-80°F) are ideal; extreme heat helps hitters more<br>• High humidity in summer adds carry for hitters<br>• Rain often leads to delays (no roof) → game-time weather is critical'},
+  {team:'BOS',stadium:'Fenway Park',lf:310,cf:420,rf:302,lfWall:'37 (Monster)',rfWall:'5–15',hitter:'S, SW',pitcher:'N, NE',notes:'• S/SW winds help balls clear the Monster and short RF = huge hitter boost<br>• North winds blow in = pitcher friendly, especially to LF<br>• Green Monster still dominates; cold temps (<50°F) kill carry for hitters<br>• High humidity helps balls travel farther over the Monster<br>• No roof = wind direction changes everything in this historic park'},
+  {team:'CHC',stadium:'Wrigley Field',lf:355,cf:400,rf:353,lfWall:'15–20',rfWall:'15–20',hitter:'S, SW',pitcher:'N, NE',notes:'• Most wind-sensitive park in MLB: S/SW winds = massive hitter boost<br>• North winds blow in from CF = extreme pitcher advantage<br>• Classic “wind blowing out” days create HR festivals<br>• Cold April/May temps often suppress offense even with favorable wind<br>• Ivy walls + wind = unpredictable; always check direction before betting on overs'},
+  {team:'CHW',stadium:'Guaranteed Rate Field',lf:330,cf:400,rf:335,lfWall:'8–15',rfWall:'8–15',hitter:'S, SW',pitcher:'N, NE',notes:'• Standard open-air park: S/SW winds help hitters clear fences<br>• North winds suppress fly balls = pitcher edge<br>• Warm summer nights boost carry for hitters<br>• High humidity common in Chicago summer = slight hitter advantage<br>• No roof = full weather impact; wind is the biggest variable here'},
+  {team:'CIN',stadium:'Great American Ball Park',lf:328,cf:404,rf:325,lfWall:'12',rfWall:'12',hitter:'S, SW',pitcher:'N, NE',notes:'• Very hitter-friendly when wind blows out (S/SW) – short fences help<br>• North winds blow in = strong pitcher advantage<br>• Hot humid Ohio River Valley nights add extra carry for hitters<br>• Rain frequent → check roof status (none) for delays<br>• Altitude is low but heat + wind makes it one of the more offense-friendly NL parks'},
+  {team:'CLE',stadium:'Progressive Field',lf:325,cf:405,rf:325,lfWall:'19',rfWall:'19',hitter:'S, SW',pitcher:'N, NE',notes:'• Symmetric but deep CF; S/SW winds help hitters<br>• New 2025-26 wind tunnel effect favors lefty hitters on S winds<br>• Cold Lake Erie winds in April = pitcher paradise<br>• Warm summer nights + wind out = more HR<br>• No roof = wind direction is the #1 game-changer here'},
+  {team:'COL',stadium:'Coors Field',lf:347,cf:415,rf:350,lfWall:'8–25',rfWall:'8–25',hitter:'Any wind (altitude)',pitcher:'Almost never',notes:'• Altitude (5,280 ft) = permanent hitter boost (balls fly 10-15% farther)<br>• Any wind direction helps hitters more than other parks<br>• Dry air + thin atmosphere = lowest humidity, maximum carry<br>• Night games cooler but still hitter-friendly<br>• Pitchers must rely on movement; fastballs get crushed here'},
+  {team:'DET',stadium:'Comerica Park',lf:345,cf:420,rf:330,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'• Deep CF makes it pitcher-friendly most days<br>• S/SW winds help hitters clear fences<br>• Lake breezes often blow in from CF = big pitcher edge<br>• Cold April/May = suppressed offense<br>• Warm summer nights + wind out = rare hitter-friendly days'},
+  {team:'HOU',stadium:'Daikin Park',lf:315,cf:435,rf:326,lfWall:'21–90 (train)',rfWall:'21–90',hitter:'S, SW',pitcher:'N, NE',notes:'• Roof usually closed = weather irrelevant (pitcher control)<br>• When open, S/SW winds boost hitters over short LF<br>• Tall LF wall protects pitchers<br>• Houston heat + humidity = extra carry when roof is open<br>• Rain forces roof closure → instant pitcher advantage'},
+  {team:'KCR',stadium:'Kauffman Stadium',lf:347,cf:410,rf:344,lfWall:'8.5',rfWall:'8.5',hitter:'S, SW (much more now)',pitcher:'N, NE',notes:'• 2026 fences moved in + lowered = now much more HR-friendly<br>• S/SW winds boost hitters significantly<br>• North winds still help pitchers<br>• Hot dry summer nights add carry<br>• New dimensions make wind impact even bigger than before'},
+  {team:'LAA',stadium:'Angel Stadium',lf:330,cf:396,rf:330,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'• Very symmetric; S/SW winds help hitters<br>• North winds blow in = pitcher advantage<br>• Southern California marine layer often keeps balls in the yard<br>• Warm dry nights = good carry for hitters<br>• No roof = wind direction decides offense vs pitching'},
+  {team:'LAD',stadium:'Dodger Stadium',lf:330,cf:400,rf:330,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'• Nearly symmetric but marine layer often suppresses HR<br>• S/SW winds help hitters; N winds kill carry<br>• Night games cooler = less carry than daytime<br>• Low humidity = balls fly true but not as far as inland parks<br>• Wind is the biggest variable at Chavez Ravine'},
+  {team:'MIA',stadium:'loanDepot park',lf:340,cf:420,rf:335,lfWall:'8–14',rfWall:'8–14',hitter:'S, SW (roof often closed)',pitcher:'N, NE',notes:'• Roof usually closed = weather irrelevant (pitcher paradise)<br>• When open, S/SW winds help hitters<br>• Deep CF + roof = generally pitcher-friendly<br>• Miami heat/humidity when open = extra carry<br>• Rain forces closure → pitchers win every time'},
+  {team:'MIL',stadium:'American Family Field',lf:332,cf:400,rf:325,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'• Retractable roof: closed = no weather impact<br>• Open + S/SW winds = strong hitter boost<br>• Lake Michigan breezes often blow in when roof open<br>• Warm summer nights help hitters<br>• Roof status is the #1 factor here'},
+  {team:'MIN',stadium:'Target Field',lf:339,cf:404,rf:328,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'• Open-air with frequent lake breezes blowing in = pitcher edge<br>• S/SW winds help hitters<br>• Cold April/May nights suppress offense heavily<br>• Warm summer nights + wind out = hitter-friendly<br>• Wind direction changes everything in Minnesota'},
+  {team:'NYM',stadium:'Citi Field',lf:335,cf:405,rf:330,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'• Wind helped the most HR in recent Statcast data<br>• S/SW winds = big hitter boost<br>• North winds blow in = strong pitcher advantage<br>• Marine air from nearby water keeps many balls in the yard<br>• No roof = wind is king at Citi Field'},
+  {team:'NYY',stadium:'Yankee Stadium',lf:318,cf:408,rf:314,lfWall:'8',rfWall:'8',hitter:'S, SW (huge RF boost)',pitcher:'N, NE',notes:'• Short RF porch + S/SW winds = massive HR boost for righties<br>• North winds suppress deep flies<br>• Warm humid summer nights add carry<br>• Wind tunnel effect in the Bronx makes it very wind-sensitive<br>• Classic short-porch hitter park when wind is right'},
+  {team:'ATH',stadium:'Sutter Health Park (temp)',lf:330,cf:403,rf:325,lfWall:'8–12',rfWall:'8–12',hitter:'S, SW',pitcher:'N, NE',notes:'• 2026 temporary minor-league dimensions = more HR than normal<br>• S/SW winds boost hitters<br>• Sacramento Delta breeze often blows out to right-center<br>• Warm Central Valley nights = good carry<br>• Open-air temp venue = full weather impact'},
+  {team:'PHI',stadium:'Citizens Bank Park',lf:330,cf:401,rf:329,lfWall:'8–13',rfWall:'8–13',hitter:'S, SW',pitcher:'N, NE',notes:'• Wind ranked top-3 for suppressing HR in recent years<br>• S/SW winds help hitters; N winds kill flies<br>• Hosting 2026 All-Star Game = extra attention to weather<br>• Warm humid Philly nights = good carry when wind is out<br>• No roof = wind direction is critical'},
+  {team:'PIT',stadium:'PNC Park',lf:325,cf:399,rf:320,lfWall:'21 (Clemente)',rfWall:'21',hitter:'S, SW',pitcher:'N, NE',notes:'• River breeze often blows in from CF = pitcher advantage<br>• S/SW winds help hitters clear Clemente Wall<br>• Beautiful river setting but wind can be unpredictable<br>• Mild Pittsburgh nights = average carry<br>• No roof = check wind before every game'},
+  {team:'SDP',stadium:'Petco Park',lf:336,cf:396,rf:322,lfWall:'8–11',rfWall:'8–11',hitter:'S, SW (marine layer)',pitcher:'N, NE',notes:'• Marine layer + wind often blows in = extreme pitcher park<br>• S/SW winds can help hitters on rare days<br>• Cool San Diego nights = suppressed offense<br>• Deep gaps make extra-base hits common even on calm days<br>• Wind is the #1 suppressor of scoring here'},
+  {team:'SEA',stadium:'T-Mobile Park',lf:331,cf:405,rf:327,lfWall:'8',rfWall:'8',hitter:'S, SW (when roof open)',pitcher:'N, NE',notes:'• One of the toughest hitter parks; wind often blows in<br>• Roof open + S/SW wind = rare hitter boost<br>• Marine air + cool temps = balls die in the air<br>• Roof usually closed in bad weather = pitcher control<br>• Wind + roof status decide everything in Seattle'},
+  {team:'SFG',stadium:'Oracle Park',lf:339,cf:399,rf:309,lfWall:'8–25',rfWall:'8–25',hitter:'S, SW (bay wind often blows in)',pitcher:'N, NE',notes:'• Bay winds often blow in = strong pitcher advantage<br>• Short RF porch + rare S wind = hitter boost<br>• Cool SF temps + marine layer = suppressed HR<br>• Famous for “triples alley” and wind-killed fly balls<br>• Wind direction is legendary here'},
+  {team:'STL',stadium:'Busch Stadium',lf:336,cf:400,rf:335,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'• Standard dimensions; S/SW winds help hitters<br>• North winds blow in = pitcher edge<br>• Hot humid Midwest summers = good carry<br>• No roof = full weather impact<br>• Wind is the main variable at Busch'},
+  {team:'TBR',stadium:'Tropicana Field (2026)',lf:315,cf:404,rf:322,lfWall:'8–15',rfWall:'8–15',hitter:'S, SW (when roof open)',pitcher:'N, NE',notes:'• Dome usually closed = weather irrelevant (pitcher heaven)<br>• Roof open + S/SW winds = hitter boost<br>• 2026 dimensions slightly more HR-friendly<br>• Rain forces closure → pitchers win<br>• Roof status is everything for Tropicana'},
+  {team:'TEX',stadium:'Globe Life Field',lf:329,cf:407,rf:326,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'• Retractable roof usually open in good weather<br>• S/SW winds help hitters in Texas heat<br>• Extreme summer heat (>95°F) adds massive carry<br>• Roof closed in rain/extreme heat = pitcher control<br>• Hot dry air = one of the most hitter-friendly when open'},
+  {team:'TOR',stadium:'Rogers Centre',lf:328,cf:400,rf:328,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'• Symmetric retractable roof<br>• Roof open + S/SW winds = hitter advantage<br>• Closed roof = no weather impact<br>• Toronto lake breezes often blow in when open<br>• Roof status + wind = key factors'},
+  {team:'WSN',stadium:'Nationals Park',lf:336,cf:403,rf:335,lfWall:'8',rfWall:'8',hitter:'S, SW',pitcher:'N, NE',notes:'• Standard modern park<br>• S/SW winds help hitters<br>• North winds blow in = pitcher edge<br>• Humid DC summers = good carry<br>• No roof = full weather impact; wind is the biggest variable'}
+];
+
+const WIND=[
+  {team:'ARI',windFrom:'North',blowsTo:'south toward CF/RF',impact:'Strong headwind blowing in from CF. Knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'ARI',windFrom:'Northeast',blowsTo:'southwest toward RF',impact:'Inward from RF side with slight right-to-left push. Mostly suppresses power.',level:'Pitcher-Friendly'},
+  {team:'ARI',windFrom:'East',blowsTo:'west toward LF',impact:'Pure right-to-left crosswind. Biggest offensive boost at Chase Field.',level:'Strongly Hitter-Friendly'},
+  {team:'ARI',windFrom:'Southeast',blowsTo:'northwest',impact:'Outward tailwind to CF/LF with right-to-left cross. Very hitter-friendly.',level:'Very Hitter-Friendly'},
+  {team:'ARI',windFrom:'South',blowsTo:'north toward CF',impact:'Pure tailwind out to all fields. Highly hitter-friendly.',level:'Very Hitter-Friendly'},
+  {team:'ARI',windFrom:'Southwest',blowsTo:'northeast',impact:'Outward to CF/RF with left-to-right cross. Strong hitter boost.',level:'Hitter-Friendly'},
+  {team:'ARI',windFrom:'West',blowsTo:'east toward RF',impact:'Pure left-to-right crosswind. Moderate effect still affects flight.',level:'Moderately Hitter-Friendly'},
+  {team:'ARI',windFrom:'Northwest',blowsTo:'southeast',impact:'Inward headwind from LF side. Mostly pitcher-friendly.',level:'Pitcher-Friendly'},
+  {team:'ATL',windFrom:'North',blowsTo:'south toward CF/RF',impact:'Strong tailwind blowing out to center and right field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'ATL',windFrom:'Northeast',blowsTo:'southwest toward RF',impact:'Mild outward tailwind with cross component. Some extra carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'ATL',windFrom:'East',blowsTo:'west toward LF',impact:'Inward headwind from outfield with cross push. Suppresses fly ball distance.',level:'Pitcher-Friendly'},
+  {team:'ATL',windFrom:'Southeast',blowsTo:'northwest toward home plate',impact:'Strong headwind blowing in directly from center field. Strongly knocks down flies everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'ATL',windFrom:'South',blowsTo:'north toward home plate',impact:'Strong headwind in from CF. Knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'ATL',windFrom:'Southwest',blowsTo:'northeast toward LF',impact:'Mild inward component with left-to-right cross. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'ATL',windFrom:'West',blowsTo:'east toward LF/CF',impact:'Strong outward/tailwind component. Increases carry especially to left/center field.',level:'Hitter-Friendly'},
+  {team:'ATL',windFrom:'Northwest',blowsTo:'southeast toward CF',impact:'Very strong tailwind blowing out to center field. Maximum carry.',level:'Very Hitter-Friendly'},
+  {team:'BAL',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'BAL',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'BAL',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'BAL',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'BAL',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'BAL',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'BAL',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'BAL',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'BOS',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'BOS',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'BOS',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'BOS',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'BOS',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'BOS',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'BOS',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'BOS',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'CHC',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'CHC',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'CHC',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'CHC',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'CHC',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'CHC',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'CHC',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'CHC',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'CHW',windFrom:'North',blowsTo:'south toward CF/RF',impact:'Strong tailwind blowing out to center and right field. Greatly increases fly ball carry.',level:'Hitter-Friendly'},
+  {team:'CHW',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'CHW',windFrom:'East',blowsTo:'west toward LF',impact:'Strong inward headwind from outfield with cross push. Suppresses fly ball distance.',level:'Strongly Pitcher-Friendly'},
+  {team:'CHW',windFrom:'Southeast',blowsTo:'northwest toward home plate',impact:'Very strong headwind blowing in directly from center field. Strongly knocks down flies everywhere.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'CHW',windFrom:'South',blowsTo:'north toward home plate',impact:'Moderate headwind in from CF. Knocks down fly balls.',level:'Pitcher-Friendly'},
+  {team:'CHW',windFrom:'Southwest',blowsTo:'northeast toward LF',impact:'Mild outward component with cross. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'CHW',windFrom:'West',blowsTo:'east toward LF/CF',impact:'Strong outward tailwind component. Increases carry especially to left/center field.',level:'Strongly Hitter-Friendly'},
+  {team:'CHW',windFrom:'Northwest',blowsTo:'southeast toward CF',impact:'Very strong tailwind blowing out to center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'CIN',windFrom:'North',blowsTo:'south toward CF/RF',impact:'Strong tailwind blowing out to center and right field. Greatly increases fly ball carry.',level:'Hitter-Friendly'},
+  {team:'CIN',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'CIN',windFrom:'East',blowsTo:'west toward LF',impact:'Strong inward headwind from outfield with cross push. Suppresses fly ball distance.',level:'Strongly Pitcher-Friendly'},
+  {team:'CIN',windFrom:'Southeast',blowsTo:'northwest toward home plate',impact:'Very strong headwind blowing in directly from center field. Strongly knocks down flies everywhere.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'CIN',windFrom:'South',blowsTo:'north toward home plate',impact:'Moderate headwind in from CF. Knocks down fly balls.',level:'Pitcher-Friendly'},
+  {team:'CIN',windFrom:'Southwest',blowsTo:'northeast toward LF',impact:'Mild outward component with cross. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'CIN',windFrom:'West',blowsTo:'east toward LF/CF',impact:'Strong outward tailwind component. Increases carry especially to left/center field.',level:'Strongly Hitter-Friendly'},
+  {team:'CIN',windFrom:'Northwest',blowsTo:'southeast toward CF',impact:'Very strong tailwind blowing out to center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'CLE',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'CLE',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'CLE',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'CLE',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'CLE',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'CLE',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'CLE',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'CLE',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'COL',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'COL',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'COL',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'COL',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'COL',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'COL',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'COL',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'COL',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'DET',windFrom:'North',blowsTo:'south toward CF/RF',impact:'Strong tailwind blowing out to center and right field. Greatly increases fly ball carry.',level:'Hitter-Friendly'},
+  {team:'DET',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'DET',windFrom:'East',blowsTo:'west toward LF',impact:'Strong inward headwind from outfield with cross push. Suppresses fly ball distance.',level:'Strongly Pitcher-Friendly'},
+  {team:'DET',windFrom:'Southeast',blowsTo:'northwest toward home plate',impact:'Very strong headwind blowing in directly from center field. Strongly knocks down flies everywhere.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'DET',windFrom:'South',blowsTo:'north toward home plate',impact:'Moderate headwind in from CF. Knocks down fly balls.',level:'Pitcher-Friendly'},
+  {team:'DET',windFrom:'Southwest',blowsTo:'northeast toward LF',impact:'Mild outward component with cross. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'DET',windFrom:'West',blowsTo:'east toward LF/CF',impact:'Strong outward tailwind component. Increases carry especially to left/center field.',level:'Strongly Hitter-Friendly'},
+  {team:'DET',windFrom:'Northwest',blowsTo:'southeast toward CF',impact:'Very strong tailwind blowing out to center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'HOU',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'HOU',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'HOU',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'HOU',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'HOU',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'HOU',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'HOU',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'HOU',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'KCR',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'KCR',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'KCR',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'KCR',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'KCR',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'KCR',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'KCR',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'KCR',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'LAA',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'LAA',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'LAA',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'LAA',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'LAA',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'LAA',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'LAA',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'LAA',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'LAD',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'LAD',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'LAD',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'LAD',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'LAD',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'LAD',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'LAD',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'LAD',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'MIA',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'MIA',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'MIA',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'MIA',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'MIA',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'MIA',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'MIA',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'MIA',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'MIL',windFrom:'North',blowsTo:'south toward CF/RF',impact:'Strong tailwind blowing out to center and right field. Greatly increases fly ball carry.',level:'Hitter-Friendly'},
+  {team:'MIL',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'MIL',windFrom:'East',blowsTo:'west toward LF',impact:'Strong inward headwind from outfield with cross push. Suppresses fly ball distance.',level:'Strongly Pitcher-Friendly'},
+  {team:'MIL',windFrom:'Southeast',blowsTo:'northwest toward home plate',impact:'Very strong headwind blowing in directly from center field. Strongly knocks down flies everywhere.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'MIL',windFrom:'South',blowsTo:'north toward home plate',impact:'Moderate headwind in from CF. Knocks down fly balls.',level:'Pitcher-Friendly'},
+  {team:'MIL',windFrom:'Southwest',blowsTo:'northeast toward LF',impact:'Mild outward component with cross. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'MIL',windFrom:'West',blowsTo:'east toward LF/CF',impact:'Strong outward tailwind component. Increases carry especially to left/center field.',level:'Strongly Hitter-Friendly'},
+  {team:'MIL',windFrom:'Northwest',blowsTo:'southeast toward CF',impact:'Very strong tailwind blowing out to center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'MIN',windFrom:'North',blowsTo:'south toward CF/RF',impact:'Strong tailwind blowing out to center and right field. Greatly increases fly ball carry.',level:'Hitter-Friendly'},
+  {team:'MIN',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'MIN',windFrom:'East',blowsTo:'west toward LF',impact:'Strong inward headwind from outfield with cross push. Suppresses fly ball distance.',level:'Strongly Pitcher-Friendly'},
+  {team:'MIN',windFrom:'Southeast',blowsTo:'northwest toward home plate',impact:'Very strong headwind blowing in directly from center field. Strongly knocks down flies everywhere.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'MIN',windFrom:'South',blowsTo:'north toward home plate',impact:'Moderate headwind in from CF. Knocks down fly balls.',level:'Pitcher-Friendly'},
+  {team:'MIN',windFrom:'Southwest',blowsTo:'northeast toward LF',impact:'Mild outward component with cross. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'MIN',windFrom:'West',blowsTo:'east toward LF/CF',impact:'Strong outward tailwind component. Increases carry especially to left/center field.',level:'Strongly Hitter-Friendly'},
+  {team:'MIN',windFrom:'Northwest',blowsTo:'southeast toward CF',impact:'Very strong tailwind blowing out to center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'NYM',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'NYM',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'NYM',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'NYM',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'NYM',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'NYM',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'NYM',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'NYM',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'NYY',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'NYY',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'NYY',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'NYY',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'NYY',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'NYY',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'NYY',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'NYY',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'ATH',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'ATH',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'ATH',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'ATH',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'ATH',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'ATH',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'ATH',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'ATH',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'PHI',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'PHI',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'PHI',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'PHI',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'PHI',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'PHI',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'PHI',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'PHI',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'PIT',windFrom:'North',blowsTo:'south toward CF/RF',impact:'Strong tailwind blowing out to center and right field. Greatly increases fly ball carry.',level:'Hitter-Friendly'},
+  {team:'PIT',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'PIT',windFrom:'East',blowsTo:'west toward LF',impact:'Strong inward headwind from outfield with cross push. Suppresses fly ball distance.',level:'Strongly Pitcher-Friendly'},
+  {team:'PIT',windFrom:'Southeast',blowsTo:'northwest toward home plate',impact:'Very strong headwind blowing in directly from center field. Strongly knocks down flies everywhere.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'PIT',windFrom:'South',blowsTo:'north toward home plate',impact:'Moderate headwind in from CF. Knocks down fly balls.',level:'Pitcher-Friendly'},
+  {team:'PIT',windFrom:'Southwest',blowsTo:'northeast toward LF',impact:'Mild outward component with cross. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'PIT',windFrom:'West',blowsTo:'east toward LF/CF',impact:'Strong outward tailwind component. Increases carry especially to left/center field.',level:'Strongly Hitter-Friendly'},
+  {team:'PIT',windFrom:'Northwest',blowsTo:'southeast toward CF',impact:'Very strong tailwind blowing out to center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'SDP',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'SDP',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'SDP',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'SDP',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'SDP',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'SDP',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'SDP',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'SDP',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'SFG',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from center field. Suppresses fly ball distance.',level:'Pitcher-Friendly'},
+  {team:'SFG',windFrom:'Northeast',blowsTo:'southwest toward RF',impact:'Moderate to strong headwind in from right field side. Suppresses carry to right/center.',level:'Pitcher-Friendly'},
+  {team:'SFG',windFrom:'East',blowsTo:'west toward LF',impact:'Strong tailwind blowing out toward left field. Increases carry to left field.',level:'Hitter-Friendly'},
+  {team:'SFG',windFrom:'Southeast',blowsTo:'northwest toward home plate',impact:'Mild tailwind component with cross. Slight extra carry overall.',level:'Mildly Hitter-Friendly'},
+  {team:'SFG',windFrom:'South',blowsTo:'north toward CF',impact:'Moderate headwind blowing in. Suppresses distance.',level:'Pitcher-Friendly'},
+  {team:'SFG',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Strong headwind blowing in. Significant suppression.',level:'Strongly Pitcher-Friendly'},
+  {team:'SFG',windFrom:'West',blowsTo:'east toward RF',impact:'Very strong headwind blowing in from the Bay. Strongly knocks down flies to right/center.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'SFG',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Strong headwind in with cross component. Suppresses fly balls.',level:'Strongly Pitcher-Friendly'},
+  {team:'SEA',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'SEA',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'SEA',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'SEA',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'SEA',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'SEA',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'SEA',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'SEA',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'STL',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'STL',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'STL',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'STL',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'STL',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'STL',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'STL',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'STL',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'TBR',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'TBR',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'TBR',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'TBR',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'TBR',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'TBR',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'TBR',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'TBR',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'TEX',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'TEX',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'TEX',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'TEX',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'TEX',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'TEX',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'TEX',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'TEX',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'TOR',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'TOR',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'TOR',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'TOR',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'TOR',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'TOR',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'TOR',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'TOR',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'},
+  {team:'WSN',windFrom:'North',blowsTo:'south toward home plate',impact:'Strong headwind blowing in from outfield. Strongly knocks down fly balls everywhere.',level:'Strongly Pitcher-Friendly'},
+  {team:'WSN',windFrom:'Northeast',blowsTo:'southwest toward home plate',impact:'Very strong headwind blowing in from outfield. Maximum suppression of fly ball distance.',level:'Very Strongly Pitcher-Friendly'},
+  {team:'WSN',windFrom:'East',blowsTo:'west toward LF',impact:'Moderate inward headwind with cross component. Suppresses fly balls overall.',level:'Pitcher-Friendly'},
+  {team:'WSN',windFrom:'Southeast',blowsTo:'northwest toward RF',impact:'Mild tailwind component with cross push. Slight extra carry.',level:'Mildly Hitter-Friendly'},
+  {team:'WSN',windFrom:'South',blowsTo:'north toward CF',impact:'Strong tailwind blowing out to center field. Greatly increases fly ball carry.',level:'Strongly Hitter-Friendly'},
+  {team:'WSN',windFrom:'Southwest',blowsTo:'northeast toward CF',impact:'Very strong tailwind blowing out directly aligned with center field. Maximum carry.',level:'Very Strongly Hitter-Friendly'},
+  {team:'WSN',windFrom:'West',blowsTo:'east toward RF',impact:'Moderate outward tailwind component. Increases carry especially to right field.',level:'Hitter-Friendly'},
+  {team:'WSN',windFrom:'Northwest',blowsTo:'southeast toward LF',impact:'Mild headwind with cross component. Slight suppression of distance.',level:'Mildly Pitcher-Friendly'}
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let allData={}, gameTimes={}, openTeam=null;
+
+// ── COLOR RULES ──────────────────────────────────────────────────────────────
+function colTemp(t){if(t>=95||t<=40)return'col-red';if(t>=85)return'col-yellow';return'col-green';}
+function colHumid(h){if(h<50)return'col-red';if(h<=60)return'col-yellow';if(h<=70)return'col-dull';return'col-green';}
+function colPressure(p){if(p>1020)return'col-red';if(p>=1015)return'col-yellow';if(p>=1010)return'col-dull';return'col-green';}
+function colWind(s){if(s<=5.9)return'col-red';if(s<=12.9)return'col-yellow';if(s<=19.9)return'col-dull';return'col-green';}
+function colGusts(g){if(g<=10.9)return'col-red';if(g<=18.9)return'col-yellow';if(g<=25)return'col-dull';return'col-green';}
+function colPrecip(p){if(p<20)return'col-green';if(p<40)return'col-yellow';return'col-red';}
+function tCol(t){return t>=95||t<=40?'col-red':t>=85?'col-yellow':'col-green';}
+function wColRow(s){return s<=5.9?'col-red':s<=12.9?'col-yellow':s<=19.9?'col-dull':'col-green';}
+function pColRow(p){return p<20?'col-green':p<40?'col-yellow':'col-red';}
+
+const cardinal=d=>['N','NE','E','SE','S','SW','W','NW'][Math.round(d/45)%8];
+
+// ── EST OFFSET HELPER ────────────────────────────────────────────────────────
+function getEstOffset(tz){
+  const map = {'ET':0,'CT':-1,'MT':-2,'PT':-3,'MST':-2};
+  return map[tz] !== undefined ? map[tz] : 0;
+}
+
+// ── LAZY FETCH ───────────────────────────────────────────────────────────────
+function nowEST(){
+  return new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+}
+function fmtEST(date){
+  return date.toLocaleString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit',hour12:true,month:'short',day:'numeric'});
+}
+
+async function fetchTeamData(abbr){
+  if(allData[abbr] && !allData[abbr].err) return;
+  const team=TEAMS.find(t=>t.abbr===abbr);
+  if(!team) return;
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${team.lat}&longitude=${team.lon}`
+  +`&hourly=temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m,`
+  +`wind_direction_10m,wind_gusts_10m,apparent_temperature,precipitation_probability,precipitation`
+  +`&timezone=auto&forecast_days=1&wind_speed_unit=mph&temperature_unit=fahrenheit`;
+  try{
+  const json=await fetch(url).then(r=>r.json());
+  const h=json.hourly; const hours=[]; let added=0;
+  for(let i=0;i<h.time.length && added<14;i++){
+  const t=new Date(h.time[i]);
+  if(t.getHours()<10) continue;
+  hours.push({
+  time:t, temp:Math.round(h.temperature_2m[i]), feels:Math.round(h.apparent_temperature[i]),
+  humid:h.relative_humidity_2m[i], pressure:Math.round(h.surface_pressure[i]),
+  wSpeed:Math.round(h.wind_speed_10m[i]), wDir:h.wind_direction_10m[i],
+  wCard:cardinal(h.wind_direction_10m[i]), gusts:Math.round(h.wind_gusts_10m[i]),
+  pPct:h.precipitation_probability[i], pIn:h.precipitation[i],
+  });
+  added++;
+  }
+  allData[abbr]={abbr,hours,err:false};
+  const el=document.getElementById('last-updated');
+  if(el) el.textContent='Last refreshed: '+fmtEST(new Date())+' EST';
+  }catch{allData[abbr]={abbr,hours:[],err:true};}
+}
+
+// ── 2026 NOTES HELPER ────────────────────────────────────────────────────────
+function getNotes(abbr){
+  const entry=CHEAT.find(c=>c.team===abbr);
+  return entry?entry.notes:'No 2026 notes available';
+}
+
+// ── STADIUM CHEAT SHEET ROW (now always shown in dashboard) ────────────────────────
+function buildStadiumCheatSummary(abbr){
+  const row=CHEAT.find(r=>r.team===abbr);
+  if(!row) return '';
+  return `<div class="cheat-summary">
+  <div class="cheat-summary-title">🏟️ STADIUM CHEAT SHEET — ${row.stadium}</div>
+  <div class="cheat-summary-grid">
+  <div><div class="cheat-summary-label">LF</div><div class="cheat-summary-value">${row.lf} ft</div></div>
+  <div><div class="cheat-summary-label">CF</div><div class="cheat-summary-value">${row.cf} ft</div></div>
+  <div><div class="cheat-summary-label">RF</div><div class="cheat-summary-value">${row.rf} ft</div></div>
+  <div><div class="cheat-summary-label">LF Wall</div><div class="cheat-summary-value">${row.lfWall} ft</div></div>
+  <div><div class="cheat-summary-label">RF Wall</div><div class="cheat-summary-value">${row.rfWall} ft</div></div>
+  <div><div class="cheat-summary-label">Hitter-Friendly Winds</div><div class="cheat-summary-value">${row.hitter}</div></div>
+  <div><div class="cheat-summary-label">Pitcher-Friendly Winds</div><div class="cheat-summary-value">${row.pitcher}</div></div>
+  </div>
+  <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border2);">
+  <div class="cheat-summary-label">2026 NOTES / QUICK RULES (Park Factors + Weather Analysis)</div>
+  <div style="color:var(--text);line-height:1.5;">${row.notes}</div>
+  </div>
+  </div>`;
+}
+
+// ── ROOF INDICATOR ───────────────────────────────────────────────────────────
+function getRoofIndicator(abbr, h){
+  const team=TEAMS.find(t=>t.abbr===abbr);
+  if(!team || !team.roofType) return '';
+  const isClosed = (h.pPct >= 40) || (h.temp <= 40 || h.temp >= 95);
+  if(!isClosed) return '';
+  const label = team.roofType==='dome' ? 'Dome closed' : 'Roof likely closed';
+  return `<div class="roof-badge"><span style="font-size:18px">🏠</span> ${label} — weather data irrelevant</div>`;
+}
+
+// ── WIND DIRECTION DIAGRAM ───────────────────────────────────────────────────
+function buildWindDiagram(wDir, wCard, wSpeed){
+  // wDir = direction wind comes FROM (meteorological)
+  // blowDeg = direction wind is blowing TO
+  const blowDeg = (wDir + 180) % 360;
+  // SVG arrow points UP by default = North.
+  // rotate(blowDeg) is correct: 0=N, 90=E, 180=S, 270=W
+  const rot = blowDeg;
+
+  const arrowColor = wSpeed <= 5  ? '#4a6080'
+    : wSpeed <= 12 ? '#f0c040'
+    : wSpeed <= 19 ? '#6fcf60'
+    : '#3b9bff';
+
+  // Square viewBox 116x116, center (58,58)
+  // Field: CF at top, HP at bottom — N at top, S at bottom
+  return `<div class="wind-diagram">
+  <svg viewBox="0 0 116 116" xmlns="http://www.w3.org/2000/svg">
+
+    <!-- faint compass reference ring -->
+    <circle cx="58" cy="58" r="50" fill="none" stroke="#ffffff" stroke-width="0.5" stroke-dasharray="2,5" opacity="0.15"/>
+
+    <!-- outfield grass wedge (HP at bottom, arc at top) -->
+    <path d="M 58,100 L 11,56 Q 58,9 105,56 Z" fill="#183d18"/>
+    <!-- outfield fence arc -->
+    <path d="M 11,56 Q 58,9 105,56" fill="none" stroke="#276127" stroke-width="2.5"/>
+    <!-- infield dirt circle -->
+    <circle cx="58" cy="76" r="26" fill="#6b4a10" opacity="0.6"/>
+    <!-- foul lines -->
+    <line x1="58" y1="100" x2="11" y2="56" stroke="#fff" stroke-width="0.8" opacity="0.25"/>
+    <line x1="58" y1="100" x2="105" y2="56" stroke="#fff" stroke-width="0.8" opacity="0.25"/>
+    <!-- baselines (diamond) -->
+    <line x1="58" y1="100" x2="82" y2="76" stroke="#c8a060" stroke-width="0.8" opacity="0.5"/>
+    <line x1="82" y1="76" x2="58" y2="52" stroke="#c8a060" stroke-width="0.8" opacity="0.5"/>
+    <line x1="58" y1="52" x2="34" y2="76" stroke="#c8a060" stroke-width="0.8" opacity="0.5"/>
+    <line x1="34" y1="76" x2="58" y2="100" stroke="#c8a060" stroke-width="0.8" opacity="0.5"/>
+    <!-- pitcher's mound -->
+    <circle cx="58" cy="72" r="4" fill="#8a6018" opacity="0.85"/>
+    <!-- bases (rotated squares) -->
+    <rect x="55" y="49" width="6" height="6" fill="#fff" transform="rotate(45,58,52)"/>
+    <rect x="79" y="73" width="6" height="6" fill="#fff" transform="rotate(45,82,76)"/>
+    <rect x="31" y="73" width="6" height="6" fill="#fff" transform="rotate(45,34,76)"/>
+    <!-- home plate pentagon -->
+    <polygon points="58,105 53,100 53,96 63,96 63,100" fill="#fff"/>
+
+    <!-- field position labels -->
+    <text x="58" y="22" text-anchor="middle" font-size="6.5" fill="#4db84d" font-weight="700" font-family="sans-serif">CF</text>
+    <text x="20" y="44" text-anchor="middle" font-size="5.5" fill="#4db84d" font-family="sans-serif">LF</text>
+    <text x="96" y="44" text-anchor="middle" font-size="5.5" fill="#4db84d" font-family="sans-serif">RF</text>
+
+    <!-- compass tick marks (at r=50 circle edge) -->
+    <line x1="58" y1="8"   x2="58" y2="13"  stroke="#fff" stroke-width="1.2" opacity="0.5"/>
+    <line x1="93" y1="23"  x2="90" y2="26"  stroke="#fff" stroke-width="1"   opacity="0.35"/>
+    <line x1="108" y1="58" x2="103" y2="58" stroke="#fff" stroke-width="1.2" opacity="0.5"/>
+    <line x1="93" y1="93"  x2="90" y2="90"  stroke="#fff" stroke-width="1"   opacity="0.35"/>
+    <line x1="58" y1="108" x2="58" y2="103" stroke="#fff" stroke-width="1.2" opacity="0.5"/>
+    <line x1="23" y1="93"  x2="26" y2="90"  stroke="#fff" stroke-width="1"   opacity="0.35"/>
+    <line x1="8"  y1="58"  x2="13" y2="58"  stroke="#fff" stroke-width="1.2" opacity="0.5"/>
+    <line x1="23" y1="23"  x2="26" y2="26"  stroke="#fff" stroke-width="1"   opacity="0.35"/>
+
+    <!-- compass labels — all 8 directions -->
+    <text x="58"  y="8"   text-anchor="middle" font-size="7"   fill="#fff" opacity="0.75" font-weight="700" font-family="sans-serif">N</text>
+    <text x="95"  y="22"  text-anchor="middle" font-size="5.5" fill="#fff" opacity="0.55" font-family="sans-serif">NE</text>
+    <text x="111" y="61"  text-anchor="middle" font-size="7"   fill="#fff" opacity="0.75" font-weight="700" font-family="sans-serif">E</text>
+    <text x="95"  y="97"  text-anchor="middle" font-size="5.5" fill="#fff" opacity="0.55" font-family="sans-serif">SE</text>
+    <text x="58"  y="114" text-anchor="middle" font-size="7"   fill="#fff" opacity="0.75" font-weight="700" font-family="sans-serif">S</text>
+    <text x="21"  y="97"  text-anchor="middle" font-size="5.5" fill="#fff" opacity="0.55" font-family="sans-serif">SW</text>
+    <text x="5"   y="61"  text-anchor="middle" font-size="7"   fill="#fff" opacity="0.75" font-weight="700" font-family="sans-serif">W</text>
+    <text x="21"  y="22"  text-anchor="middle" font-size="5.5" fill="#fff" opacity="0.55" font-family="sans-serif">NW</text>
+
+    <!-- wind arrow — centered on pitcher's mound, points toward blowDeg -->
+    <g transform="translate(58,69) rotate(${rot})">
+      <line x1="0" y1="15" x2="0" y2="-13" stroke="${arrowColor}" stroke-width="4" stroke-linecap="round"/>
+      <polygon points="0,-19 6,-11 -6,-11" fill="${arrowColor}"/>
+    </g>
+
+  </svg>
+  </div>`;
+}
+
+// ── CHEAT ROW (compact, shown below the 5 windows) ───────────────────────────
+function buildCheatRow(abbr){
+  const r=CHEAT.find(c=>c.team===abbr);
+  if(!r) return '';
+  return `<div class="cheat-row-compact">
+    <div class="cheat-row-title">🏟️ ${r.stadium}</div>
+    <div class="cheat-row-grid">
+      <div><span class="crc-label">LF</span><span class="crc-val">${r.lf} ft</span></div>
+      <div><span class="crc-label">CF</span><span class="crc-val">${r.cf} ft</span></div>
+      <div><span class="crc-label">RF</span><span class="crc-val">${r.rf} ft</span></div>
+      <div><span class="crc-label">LF Wall</span><span class="crc-val">${r.lfWall} ft</span></div>
+      <div><span class="crc-label">RF Wall</span><span class="crc-val">${r.rfWall} ft</span></div>
+      <div class="crc-wide"><span class="crc-label">🟢 Hitter Winds</span><span class="crc-val crc-hitter">${r.hitter}</span></div>
+      <div class="crc-wide"><span class="crc-label">🔴 Pitcher Winds</span><span class="crc-val crc-pitcher">${r.pitcher}</span></div>
+    </div>
+    <div class="crc-notes">${r.notes}</div>
+  </div>`;
+}
+
+// ── WINDOW CARD ──────────────────────────────────────────────────────────────
+function buildWindowCard(abbr,offsetMins,label,isGame){
+  const gt=gameTimes[abbr];
+  const parsed=parseGameTime(gt);
+  if(parsed==null) return '';
+  const targetMins=parsed+offsetMins;
+  const h=getHourData(abbr,targetMins);
+  const timeLabel=minToLabel(targetMins);
+  const gc=isGame?'game-time-card':'';
+  if(!h) return `<div class="window-card ${gc} no-data"><div class="wc-label"><div class="dot"></div>${label}</div><div class="wc-time">${timeLabel}</div><div class="wc-no-data">No data for this window</div></div>`;
+
+  const windPct=Math.min((h.wSpeed/35)*100,100);
+  const roofHTML = getRoofIndicator(abbr, h);
+  const diagramHTML = buildWindDiagram(h.wDir, h.wCard, h.wSpeed);
+
+  return `<div class="window-card ${gc} ${roofHTML?'roof-closed':''}">
+  <div class="wc-label"><div class="dot"></div>${label}</div>
+  <div class="wc-time">${timeLabel}</div>
+  <div class="wc-temp ${colTemp(h.temp)}">${h.temp}°F</div>
+  <div class="wc-feels">Feels like ${h.feels}°F</div>
+
+  ${diagramHTML}
+
+  <div class="wc-stat"><span class="wc-stat-l">Humidity</span><div style="text-align:right"><div class="wc-stat-v ${colHumid(h.humid)}">${h.humid}%</div></div></div>
+  <div class="wc-stat"><span class="wc-stat-l">Pressure</span><div style="text-align:right"><div class="wc-stat-v ${colPressure(h.pressure)}">${h.pressure} <span style="font-size:13px;font-weight:400">hPa</span></div></div></div>
+  <div class="wc-stat"><span class="wc-stat-l">Wind</span><div style="text-align:right"><div class="wc-stat-v ${colWind(h.wSpeed)}">${h.wSpeed} mph</div><div class="wc-stat-sub">${h.wCard} · ${h.wDir}°</div></div></div>
+  <div class="wc-stat"><span class="wc-stat-l">Gusts</span><div style="text-align:right"><div class="wc-stat-v ${colGusts(h.gusts)}">${h.gusts} mph</div></div></div>
+  <div class="wc-stat"><span class="wc-stat-l">Rain %</span><div style="text-align:right"><div class="wc-stat-v ${colPrecip(h.pPct)}">${h.pPct}%</div><div class="wc-stat-sub">${h.pIn}" precip</div></div></div>
+
+  ${roofHTML}
+
+  <div class="wc-wind-bar"><div class="wc-wind-fill" style="width:${windPct}%"></div></div>
+  </div>`;
+}
+
+function buildExpandPanel(abbr){
+  const gt=gameTimes[abbr]||'';
+  const parsed=parseGameTime(gt);
+  const hasTime=parsed!=null;
+
+  const teamInfo = TEAMS.find(t=>t.abbr===abbr);
+  const tz = teamInfo?.tz || 'local';
+  const offset = getEstOffset(tz);
+  let offsetText = '';
+  if (offset === 0) offsetText = 'same as EST';
+  else if (offset < 0) offsetText = `${Math.abs(offset)} hour${Math.abs(offset) > 1 ? 's' : ''} behind EST`;
+  else offsetText = `${offset} hour${offset > 1 ? 's' : ''} ahead of EST`;
+
+  const windows=hasTime?`<div class="windows-grid">
+  ${buildWindowCard(abbr,-60,'1H Before',false)}
+  ${buildWindowCard(abbr,0,'First Pitch',true)}
+  ${buildWindowCard(abbr,60,'+1 Hour',false)}
+  ${buildWindowCard(abbr,120,'+2 Hours',false)}
+  ${buildWindowCard(abbr,180,'+3 Hours',false)}
+  </div><div style="margin-top:16px;">${buildCheatRow(abbr)}</div><div style="margin-top:10px;">${buildWindCheatRow(abbr)}</div>`:`<div class="no-time-prompt">Enter a game time above to see the <span>5-window forecast</span></div>`;
+
+  // Stadium cheat summary always shown below windows
+  const cheatSection = buildStadiumCheatSummary(abbr);
+
+  return `<div class="expand-panel">
+  <div class="time-entry">
+  <label>⏱ Game Time</label>
+  <input class="time-input" id="ti-${abbr}" type="text" placeholder="7:05 PM" value="${gt}"
+  onkeydown="if(event.key==='Enter')setTime('${abbr}')"
+  oninput="liveUpdate('${abbr}')"/>
+  ${gt?`<button class="clear-btn" onclick="clearTime('${abbr}')">Clear</button>`:''}
+  <span class="time-hint">e.g. 7:05 PM · 1:10 PM · 13:10</span>
+  <span class="tz-note">⚠️ Enter time in the <strong>home team's local timezone</strong> — ${tz} (${offsetText})</span>
+  </div>
+  <div id="windows-${abbr}">${windows}</div>
+  ${cheatSection}
+  </div>`;
+}
+
+// ── TIME PARSING ─────────────────────────────────────────────────────────────
+function parseGameTime(str){if(!str)return null;str=str.trim().toUpperCase();let h,m=0,isPM=str.includes('PM'),isAM=str.includes('AM');str=str.replace(/[APM\s]/g,'');if(str.includes(':'))[h,m]=str.split(':').map(Number);else if(str.length<=2)h=Number(str);else{h=Number(str.slice(0,-2));m=Number(str.slice(-2));}if(isNaN(h))return null;if(isPM&&h<12)h+=12;if(isAM&&h===12)h=0;if(!isPM&&!isAM&&h<10)h+=12;return h*60+m;}
+function minToLabel(mins){if(mins==null)return'—';let h=Math.floor(mins/60)%24,m=mins%60;const ap=h>=12?'PM':'AM';const d=h>12?h-12:(h===0?12:h);return`${d}:${String(m).padStart(2,'0')} ${ap} EST`;}
+function getHourData(abbr,targetMins){const d=allData[abbr];if(!d||d.err||!d.hours.length)return null;const th=Math.floor(targetMins/60)%24;return d.hours.find(h=>h.time.getHours()===th)||null;}
+
+// ── TABLE RENDER ─────────────────────────────────────────────────────────────
+function renderTable(){
+  const q=document.getElementById('search').value.toLowerCase().trim();
+  const divF=document.getElementById('div-filter').value;
+  const sortK=document.getElementById('sort').value;
+  let data=TEAMS.filter(t=>{
+  const mQ=!q||t.abbr.toLowerCase().includes(q)||t.stadium.toLowerCase().includes(q);
+  const mD=divF==='all'||t.division===divF;
+  return mQ&&mD;
+  });
+  if(sortK==='game') data.sort((a,b)=>{
+  const ga=parseGameTime(gameTimes[a.abbr])??9999;
+  const gb=parseGameTime(gameTimes[b.abbr])??9999;
+  return ga-gb||a.abbr.localeCompare(b.abbr);
+  }); else data.sort((a,b)=>a.abbr.localeCompare(b.abbr));
+
+  document.getElementById('status-pill').innerHTML=`<b>${data.length}</b> stadiums`;
+  if(!data.length){document.getElementById('tbody').innerHTML=`<tr class="empty-row"><td colspan="8">No stadiums match</td></tr>`;return;}
+
+  document.getElementById('tbody').innerHTML=data.map((t,idx)=>{
+  const d=allData[t.abbr];
+  const now=d?.hours?.[0]||null;
+  const gt=gameTimes[t.abbr];
+  const isOpen=openTeam===t.abbr;
+  const badge=`<span class="team-badge" style="background:${t.color}">${t.abbr}</span>`;
+  const tempStr=now?`<span class="summary-temp ${tCol(now.temp)}">${now.temp}°F</span>`:'<span style="color:var(--muted)">—</span>';
+  const windStr=now?`<span style="font-weight:600" class="${wColRow(now.wSpeed)}">${now.wSpeed} mph ${now.wCard}</span>`:'—';
+  const precipStr=now?`<span style="font-weight:600" class="${pColRow(now.pPct)}">${now.pPct}%</span>`:'—';
+  const gtStr=gt?`<span class="has-game">⚾ ${gt.toUpperCase()}</span>`:`<span class="no-game">no game set</span>`;
+  const coordStr=`<a class="coord-link" href="https://www.google.com/maps?q=${t.lat},${t.lon}" target="_blank" onclick="event.stopPropagation()">${t.lat}, ${t.lon}</a>`;
+  return `
+  <tr class="team-row${isOpen?' open':''}" id="tr-${t.abbr}" style="animation-delay:${idx*.02}s" onclick="toggleTeam('${t.abbr}')">
+  <td>${badge}</td>
+  <td><div class="stadium-name">${t.stadium}</div><div class="stadium-div">${t.division}</div></td>
+  <td>${gtStr}</td><td>${tempStr}</td><td>${windStr}</td><td>${precipStr}</td>
+  <td>${coordStr}</td>
+  <td><span class="expand-arrow">▼</span></td>
+  </tr>
+  <tr class="expand-row${isOpen?' open':''}" id="er-${t.abbr}">
+  <td colspan="8">${isOpen?buildExpandPanel(t.abbr):''}</td>
+  </tr>`;
+  }).join('');
+}
+
+// ── CHEAT SHEET RENDER ───────────────────────────────────────────────────────
+function renderCheat(){
+  const q=document.getElementById('cheat-search').value.toLowerCase().trim();
+  const data=CHEAT.filter(r=>!q||r.team.toLowerCase().includes(q)||r.stadium.toLowerCase().includes(q));
+  const teamMap=Object.fromEntries(TEAMS.map(t=>[t.abbr,t.color]));
+  document.getElementById('cheat-tbody').innerHTML=data.map(r=>{
+  const color=teamMap[r.team]||'#333';
+  const badge=`<span class="team-badge" style="background:${color}">${r.team}</span>`;
+  return `<tr>
+  <td>${badge}</td>
+  <td><div class="stadium-name" style="font-size:13px">${r.stadium}</div></td>
+  <td class="dim-val">${r.lf}</td><td class="dim-val">${r.cf}</td><td class="dim-val">${r.rf}</td>
+  <td class="dim-val">${r.lfWall}</td><td class="dim-val">${r.rfWall}</td>
+  <td><span class="wind-friendly">${r.hitter}</span></td>
+  <td><span class="wind-pitcher">${r.pitcher}</span></td>
+  <td class="notes">${r.notes}</td>
+  </tr>`;
+  }).join('');
+}
+
+// ── INTERACTIONS ─────────────────────────────────────────────────────────────
+function toggleTeam(abbr){
+  const prev=openTeam;
+  openTeam=openTeam===abbr?null:abbr;
+  if(openTeam) fetchTeamData(abbr);
+  renderTable();
+  if(openTeam) setTimeout(()=>{document.getElementById(`tr-${abbr}`)?.scrollIntoView({behavior:'smooth',block:'nearest'});},50);
+}
+function setTime(abbr){
+  const val=document.getElementById(`ti-${abbr}`)?.value?.trim();
+  if(val) gameTimes[abbr]=val; else delete gameTimes[abbr];
+  const cell=document.querySelector(`#er-${abbr} td`);
+  if(cell) cell.innerHTML=buildExpandPanel(abbr);
+  updateRowGT(abbr);
+}
+function clearTime(abbr){
+  delete gameTimes[abbr];
+  const cell=document.querySelector(`#er-${abbr} td`);
+  if(cell) cell.innerHTML=buildExpandPanel(abbr);
+  updateRowGT(abbr);
+}
+function liveUpdate(abbr){
+  clearTimeout(liveUpdate._t);
+  liveUpdate._t=setTimeout(()=>{
+  const val=document.getElementById(`ti-${abbr}`)?.value?.trim();
+  if(val) gameTimes[abbr]=val;
+  const win=document.getElementById(`windows-${abbr}`);
+  if(!win) return;
+  const parsed=parseGameTime(val);
+  if(parsed!=null) win.innerHTML=`<div class="windows-grid">
+  ${buildWindowCard(abbr,-60,'1H Before',false)}
+  ${buildWindowCard(abbr,0,'First Pitch',true)}
+  ${buildWindowCard(abbr,60,'+1 Hour',false)}
+  ${buildWindowCard(abbr,120,'+2 Hours',false)}
+  ${buildWindowCard(abbr,180,'+3 Hours',false)}
+  </div><div style="margin-top:16px;">${buildCheatRow(abbr)}</div><div style="margin-top:10px;">${buildWindCheatRow(abbr)}</div>`;
+  else win.innerHTML=`<div class="no-time-prompt">Enter a game time above to see the <span>5-window forecast</span></div>`;
+  },350);
+}
+function updateRowGT(abbr){
+  const gt=gameTimes[abbr];
+  const cell=document.querySelector(`#tr-${abbr} td:nth-child(3)`);
+  if(!cell) return;
+  cell.innerHTML=gt?`<span class="has-game">⚾ ${gt.toUpperCase()}</span>`:`<span class="no-game">no game set</span>`;
+}
+
+// ── WIND CHEAT HELPERS ───────────────────────────────────────────────────────
+const CARD_TO_FULL={'N':'North','NE':'Northeast','E':'East','SE':'Southeast','S':'South','SW':'Southwest','W':'West','NW':'Northwest'};
+function getWindEntry(abbr, wCard){
+  if(!wCard) return null;
+  const full=CARD_TO_FULL[wCard]||wCard;
+  return WIND.find(w=>w.team===abbr && w.windFrom===full)||null;
+}
+function windLevelClass(level){
+  if(!level) return '';
+  const l=level.toLowerCase();
+  if(l.includes('very strongly hitter')||l.includes('very hitter')) return 'lvl-hitter-strong';
+  if(l.includes('strongly hitter')||l.includes('moderately hitter')) return 'lvl-hitter';
+  if(l.includes('mildly hitter')) return 'lvl-hitter-mild';
+  if(l.includes('mildly pitcher')) return 'lvl-pitcher-mild';
+  if(l.includes('very strongly pitcher')) return 'lvl-pitcher-strong';
+  if(l.includes('strongly pitcher')) return 'lvl-pitcher-strong';
+  if(l.includes('pitcher')) return 'lvl-pitcher';
+  return '';
+}
+function windLevelEmoji(level){
+  if(!level) return '';
+  const l=level.toLowerCase();
+  if(l.includes('hitter')) return '🟢';
+  if(l.includes('pitcher')) return '🔴';
+  return '⚪';
+}
+function buildWindWindowCard(abbr, offsetMins, label, isGame){
+  const gt=gameTimes[abbr];
+  const parsed=parseGameTime(gt);
+  if(parsed==null) return '';
+  const h=getHourData(abbr, parsed+offsetMins);
+  const gc=isGame?'game-wind':'';
+  if(!h) return `<div class="wind-window-card ${gc} no-wind"><div class="wwc-dir">—</div><div class="wwc-blows">${label}</div></div>`;
+  const entry=getWindEntry(abbr, h.wCard);
+  const lvlClass=entry?windLevelClass(entry.level):'';
+  const emoji=entry?windLevelEmoji(entry.level):'';
+  return `<div class="wind-window-card ${gc}">
+  <div class="wwc-dir" style="color:var(--blue)">${h.wCard} ${h.wSpeed}mph</div>
+  <div class="wwc-blows">${entry?entry.blowsTo:'—'}</div>
+  <div class="wwc-impact">${entry?entry.impact:'No wind data'}</div>
+  ${entry?`<div class="wwc-level ${lvlClass}">${emoji} ${entry.level}</div>`:''}
+  </div>`;
+}
+function buildWindCheatRow(abbr){
+  const gt=gameTimes[abbr];
+  const parsed=parseGameTime(gt);
+  if(parsed==null) return '';
+  return `<div class="wind-cheat-row">
+  <div class="wind-cheat-row-title">🌬️ WIND CHEAT SHEET — Real-Time Direction Impact</div>
+  <div class="wind-windows-grid">
+  ${buildWindWindowCard(abbr,-60,'1H Before',false)}
+  ${buildWindWindowCard(abbr,0,'First Pitch',true)}
+  ${buildWindWindowCard(abbr,60,'+1 Hour',false)}
+  ${buildWindWindowCard(abbr,120,'+2 Hours',false)}
+  ${buildWindWindowCard(abbr,180,'+3 Hours',false)}
+  </div>
+  </div>`;
+}
+
+// ── WIND CHEAT SHEET TAB RENDER ──────────────────────────────────────────────
+function renderWind(){
+  const q=document.getElementById('wind-search').value.toLowerCase().trim();
+  const teamMap=Object.fromEntries(TEAMS.map(t=>[t.abbr,t.color]));
+  const teams=TEAMS.filter(t=>!q||t.abbr.toLowerCase().includes(q)||t.stadium.toLowerCase().includes(q));
+  const rows=[];
+  teams.forEach(t=>{
+  const color=teamMap[t.abbr]||'#333';
+  const badge=`<span class="team-badge" style="background:${color}">${t.abbr}</span>`;
+  const entries=WIND.filter(w=>w.team===t.abbr);
+  entries.forEach((w,i)=>{
+  const lvlClass=windLevelClass(w.level);
+  const emoji=windLevelEmoji(w.level);
+  rows.push(`<tr>
+  <td>${i===0?badge:''}</td>
+  <td>${i===0?`<div class="stadium-name" style="font-size:13px">${t.stadium}</div>`:''}</td>
+  <td><span class="wind-dir-badge">${w.windFrom}</span></td>
+  <td><div class="wind-blows-to">${w.blowsTo}</div></td>
+  <td class="wind-impact-cell">${w.impact}</td>
+  <td><span class="wwc-level ${lvlClass}">${emoji} ${w.level}</span></td>
+  </tr>`);
+  });
+  });
+  document.getElementById('wind-tbody').innerHTML=rows.join('');
+}
+
+// ── TAB SWITCHING ────────────────────────────────────────────────────────────
+function switchTab(tab){
+  document.getElementById('weather-view').style.display = tab==='weather'?'block':'none';
+  document.getElementById('cheat-view').style.display   = tab==='cheat'?'block':'none';
+  document.getElementById('wind-view').style.display    = tab==='wind'?'block':'none';
+  document.getElementById('legend-view').style.display  = tab==='legend'?'block':'none';
+  ['weather','cheat','wind','legend'].forEach(t=>{
+  document.getElementById(`tab-${t}`).classList.toggle('active', t===tab);
+  });
+  if(tab==='cheat') renderCheat();
+  if(tab==='wind') renderWind();
+}
+
+// ── REFRESH ──────────────────────────────────────────────────────────────────
+async function loadAll(){
+  const btn=document.getElementById('refresh-btn');
+  const icon=document.getElementById('ref-icon');
+  btn.disabled=true;
+  icon.classList.add('spin');
+
+  const loadedAbbrs=Object.keys(allData);
+  allData={};
+
+  await Promise.all(loadedAbbrs.map(abbr=>fetchTeamData(abbr)));
+
+  if(openTeam){
+    const cell=document.querySelector(`#er-${openTeam} td`);
+    if(cell) cell.innerHTML=buildExpandPanel(openTeam);
+  }
+
+  renderTable();
+  icon.classList.remove('spin');
+  btn.disabled=false;
+}
+
+// ── STARTUP ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.getElementById('overlay');
+  if(overlay) overlay.classList.add('gone');
+  renderTable();
+});
+</script>
+</body>
+</html></DOCUMENT>
