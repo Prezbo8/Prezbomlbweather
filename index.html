@@ -321,6 +321,7 @@ tr.expand-row td{padding:0;border-bottom:2px solid var(--accent);}
   <button class="tab-btn" id="tab-cheat" onclick="switchTab('cheat')">🏟️ Stadium Cheat Sheet</button>
   <button class="tab-btn" id="tab-wind" onclick="switchTab('wind')">🌬️ Wind Cheat Sheet</button>
   <button class="tab-btn" id="tab-legend" onclick="switchTab('legend')">🎨 Color Legend</button>
+  <button class="tab-btn" id="tab-games" onclick="switchTab('games')">⚾ Today’s Games</button>
 </div>
 
 <!-- WEATHER VIEW (DASHBOARD) -->
@@ -405,6 +406,17 @@ tr.expand-row td{padding:0;border-bottom:2px solid var(--accent);}
   <div class="legend-section">
   <div class="legend-title">How to read the color codes</div>
   <div class="legend-grid">
+  <!-- TODAY’S GAMES DASHBOARD (new addition only) -->
+<div id="games-view" style="display:none;padding:24px 32px;">
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+    <button onclick="loadSchedule()" class="refresh-btn" style="padding:10px 24px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-3"/></svg>
+      Refresh Schedule
+    </button>
+    <div id="games-last-updated" style="font-size:13px;color:var(--muted);"></div>
+  </div>
+  <div id="games-grid" class="windows-grid" style="grid-template-columns:repeat(auto-fit,minmax(380px,1fr));"></div>
+</div>
 
   <div class="legend-card">
   <div class="legend-card-title">🌡️ Temperature (°F)</div>
@@ -1331,6 +1343,108 @@ document.addEventListener('DOMContentLoaded', () => {
   const overlay = document.getElementById('overlay');
   if(overlay) overlay.classList.add('gone');
   renderTable();
+});
+// ── NEW: TODAY’S GAMES DASHBOARD (live today’s date + automatic load) ─────────────────────────────
+const TEAM_ABBR_MAP = { 'OAK': 'ATH' };
+
+async function loadSchedule() {
+  const today = new Date().toISOString().slice(0,10); // LIVE TODAY'S DATE
+  const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=team,venue`;
+
+  const status = document.getElementById('games-last-updated');
+  status.textContent = 'Loading live schedule…';
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    const games = data.dates?.[0]?.games || [];
+
+    games.forEach(game => {
+      let homeAbbr = game.teams.home.team.abbreviation;
+      homeAbbr = TEAM_ABBR_MAP[homeAbbr] || homeAbbr;
+      const team = TEAMS.find(t => t.abbr === homeAbbr);
+      if (team) {
+        const utc = new Date(game.gameDate);
+        const localStr = utc.toLocaleString('en-US', {
+          timeZone: team.tz === 'ET' ? 'America/New_York' :
+                    team.tz === 'CT' ? 'America/Chicago' :
+                    team.tz === 'MT' ? 'America/Denver' :
+                    team.tz === 'PT' ? 'America/Los_Angeles' : 'America/New_York',
+          hour: 'numeric', minute: '2-digit', hour12: true
+        });
+        gameTimes[homeAbbr] = localStr;
+      }
+    });
+
+    renderGamesDashboard(games);
+    renderTable();
+    status.innerHTML = `✅ ${games.length} games • Live ${today}`;
+  } catch(e) {
+    status.textContent = '⚠️ Could not load schedule';
+    console.error(e);
+  }
+}
+
+function renderGamesDashboard(games) {
+  const container = document.getElementById('games-grid');
+  container.innerHTML = games.map(game => {
+    let homeAbbr = game.teams.home.team.abbreviation;
+    homeAbbr = TEAM_ABBR_MAP[homeAbbr] || homeAbbr;
+    const awayAbbr = game.teams.away.team.abbreviation;
+
+    const homeTeam = TEAMS.find(t => t.abbr === homeAbbr);
+    if (!homeTeam) return '';
+
+    fetchTeamData(homeAbbr);
+
+    const gt = gameTimes[homeAbbr] || '—';
+    const parsed = parseGameTime(gt);
+    const h = parsed !== null ? getHourData(homeAbbr, parsed) : null;
+
+    const windEntry = h ? getWindEntry(homeAbbr, h.wCard) : null;
+    const diagram = h ? buildWindDiagram(h.wDir, h.wCard, h.wSpeed, homeAbbr, windEntry?.level) : '<div class="no-data" style="padding:40px;text-align:center;color:var(--muted);">Weather loading…</div>';
+
+    return `
+    <div class="window-card" style="padding:20px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="team-badge" style="background:#555">${awayAbbr}</span>
+          <span style="font-size:22px;font-weight:800;">@</span>
+          <span class="team-badge" style="background:${homeTeam.color}">${homeAbbr}</span>
+        </div>
+        <div style="text-align:right">
+          <div class="has-game" style="font-size:15px;">${gt}</div>
+          <div style="font-size:11px;color:var(--muted);">${homeTeam.stadium}</div>
+        </div>
+      </div>
+      <div style="margin:16px 0;">${diagram}</div>
+      ${h ? `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;">
+        <div><strong>Temp</strong> <span class="${colTemp(h.temp)}">${h.temp}°F</span> (feels ${h.feels}°F)</div>
+        <div><strong>Wind</strong> <span class="${colWind(h.wSpeed)}">${h.wSpeed} mph ${h.wCard}</span></div>
+        <div><strong>Rain</strong> <span class="${colPrecip(h.pPct)}">${h.pPct}%</span></div>
+        <div><strong>Gusts</strong> ${h.gusts} mph</div>
+      </div>` : ''}
+      <div style="margin-top:16px;text-align:center;">
+        <button onclick="toggleTeam('${homeAbbr}');switchTab('weather')" class="refresh-btn" style="font-size:13px;padding:8px 16px;">
+          Open Full 5-Window Forecast →
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Extend switchTab (original untouched)
+const originalSwitchTab = window.switchTab || function(){};
+window.switchTab = function(tab) {
+  originalSwitchTab(tab);
+  const gv = document.getElementById('games-view');
+  if (gv) gv.style.display = (tab === 'games') ? 'block' : 'none';
+};
+
+// AUTO-LOAD live today’s schedule
+window.addEventListener('load', () => {
+  setTimeout(loadSchedule, 600);
 });
 </script>
 </body>
