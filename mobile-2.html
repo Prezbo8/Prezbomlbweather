@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- ── GEO-BLOCK: Puerto Rico ── -->
+<script>
+(function(){
+  var BLOCKED_REGION = 'PR'; // Puerto Rico region code
+  var BLOCKED_COUNTRY = 'US';
+  var BLOCKED_LABEL = 'Puerto Rico';
+
+  function showBlock(){
+    document.addEventListener('DOMContentLoaded', function(){
+      document.body.innerHTML = [
+        '<div style="',
+          'display:flex;flex-direction:column;align-items:center;justify-content:center;',
+          'min-height:100vh;background:#080b10;color:#dce8f5;',
+          'font-family:\'Barlow Condensed\',\'Arial Narrow\',sans-serif;text-align:center;padding:32px;',
+        '">',
+          '<div style="font-size:52px;margin-bottom:24px;">🚫</div>',
+          '<div style="font-size:32px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:#f0c040;margin-bottom:12px;">Access Restricted</div>',
+          '<div style="font-size:16px;color:#4a6080;max-width:480px;line-height:1.7;">',
+            'This site is not available in your region (<strong style="color:#dce8f5;">' + BLOCKED_LABEL + '</strong>).',
+          '</div>',
+        '</div>'
+      ].join('');
+    });
+  }
+
+  function blockNow(){
+    document.addEventListener('DOMContentLoaded', function(){
+      var overlay = document.getElementById('overlay');
+      if(overlay) overlay.style.display = 'flex';
+    });
+    showBlock();
+  }
+
+  fetch('https://ipapi.co/json/')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(
+        (d.country_code === BLOCKED_COUNTRY && d.region_code === BLOCKED_REGION) ||
+        d.country_code === 'PR'
+      ){
+        blockNow();
+      }
+    })
+    .catch(function(){
+      // On API failure, allow access (fail open)
+    });
+})();
+</script>
+<!-- ── END GEO-BLOCK ── -->
+
+<!-- ── PASSWORD GATE ── -->
+<script>
+(function(){
+  var CORRECT = '8282';
+  var SESSION_KEY = 'pwg_unlocked';
+
+  function alreadyUnlocked(){
+    try{ return sessionStorage.getItem(SESSION_KEY) === '1'; }catch(e){ return false; }
+  }
+
+  function unlock(){
+    try{ sessionStorage.setItem(SESSION_KEY, '1'); }catch(e){}
+    var gate = document.getElementById('pwg-gate');
+    if(gate){
+      gate.style.opacity = '0';
+      gate.style.transition = 'opacity 0.35s';
+      setTimeout(function(){ gate.style.display = 'none'; }, 360);
+    }
+  }
+
+  function showGate(){
+    document.addEventListener('DOMContentLoaded', function(){
+      var gate = document.createElement('div');
+      gate.id = 'pwg-gate';
+      gate.innerHTML = [
+        '<style>',
+          '#pwg-gate{position:fixed;inset:0;background:#080b10;z-index:99999;',
+            'display:flex;flex-direction:column;align-items:center;justify-content:center;',
+            'font-family:"Barlow Condensed","Arial Narrow",sans-serif;padding:32px;}',
+          '#pwg-box{background:#0d1219;border:1px solid #243040;border-radius:12px;',
+            'padding:40px 24px;width:100%;max-width:320px;text-align:center;',
+            'box-shadow:0 8px 60px rgba(0,0,0,0.6);}',
+          '#pwg-icon{font-size:42px;margin-bottom:18px;}',
+          '#pwg-title{font-size:24px;font-weight:900;letter-spacing:2px;text-transform:uppercase;',
+            'color:#fff;margin-bottom:6px;}',
+          '#pwg-sub{font-size:12px;color:#4a6080;letter-spacing:1.5px;text-transform:uppercase;',
+            'margin-bottom:28px;}',
+          '#pwg-input{width:100%;background:#111820;border:1px solid #243040;border-radius:6px;',
+            'padding:12px 16px;color:#dce8f5;font-family:"Barlow Condensed","Arial Narrow",sans-serif;',
+            'font-size:20px;font-weight:700;letter-spacing:4px;text-align:center;outline:none;',
+            'transition:border-color .2s;margin-bottom:14px;}',
+          '#pwg-input:focus{border-color:#f0c040;}',
+          '#pwg-input::placeholder{color:#2a3a50;letter-spacing:2px;font-size:16px;}',
+          '#pwg-btn{width:100%;background:#f0c040;color:#000;border:none;border-radius:6px;',
+            'padding:12px;font-family:"Barlow Condensed","Arial Narrow",sans-serif;',
+            'font-weight:900;font-size:14px;letter-spacing:2px;text-transform:uppercase;',
+            'cursor:pointer;transition:background .15s,transform .1s;margin-bottom:10px;}',
+          '#pwg-btn:active{background:#ffd060;transform:scale(0.98);}',
+          '#pwg-err{font-size:12px;color:#ff4545;letter-spacing:1.5px;text-transform:uppercase;',
+            'min-height:18px;transition:opacity .2s;}',
+          '#pwg-gate.shake #pwg-box{animation:pwg-shake .35s ease;}',
+          '@keyframes pwg-shake{0%,100%{transform:translateX(0)}',
+            '20%{transform:translateX(-8px)}60%{transform:translateX(8px)}80%{transform:translateX(-4px)}}',
+        '</style>',
+        '<div id="pwg-box">',
+          '<div id="pwg-icon">⚾🔒</div>',
+          '<div id="pwg-title">MLB Weather</div>',
+          '<div id="pwg-sub">Enter password</div>',
+          '<input id="pwg-input" type="password" placeholder="••••" maxlength="20" autocomplete="off"/>',
+          '<button id="pwg-btn">Unlock</button>',
+          '<div id="pwg-err"></div>',
+        '</div>'
+      ].join('');
+      document.body.appendChild(gate);
+
+      var input = document.getElementById('pwg-input');
+      var btn   = document.getElementById('pwg-btn');
+      var err   = document.getElementById('pwg-err');
+
+      function attempt(){
+        if(input.value === CORRECT){
+          err.textContent = '';
+          unlock();
+        } else {
+          err.textContent = 'Incorrect password';
+          input.value = '';
+          gate.classList.add('shake');
+          setTimeout(function(){ gate.classList.remove('shake'); }, 400);
+          input.focus();
+        }
+      }
+
+      btn.addEventListener('click', attempt);
+      input.addEventListener('keydown', function(e){ if(e.key === 'Enter') attempt(); });
+      input.focus();
+    });
+  }
+
+  if(!alreadyUnlocked()) showGate();
+})();
+</script>
+<!-- ── END PASSWORD GATE ── -->
+
+<!-- Favicons deployed -->  
+<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="shortcut icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="MLB Weather" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5"/>
+<title>MLB WEATHER HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#080b10; --surface:#0d1219; --panel:#111820; --border:#1c2533; --border2:#243040;
+  --text:#dce8f5; --muted:#4a6080; --dim:#2a3a50; --accent:#f0c040;
+  --c-red:#ff4545; --c-yellow:#f0c040; --c-dull:#6fcf60; --c-green:#30d98a;
+  --blue:#3b9bff; --orange:#ff8c30;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden;
+  padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);}
+
+/* ── HEADER ── */
+.site-header{
+  background:linear-gradient(180deg,#050810,#080b10);
+  border-bottom:2px solid var(--accent);
+  padding:12px 16px;
+  position:sticky;
+  top:0;
+  z-index:200;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-height:56px;
+}
+
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex:1;
+}
+
+.header-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:2px;
+  color:var(--text);
+}
+
+.header-sub{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:10px;
+  color:var(--muted);
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  margin-top:2px;
+}
+
+.nav-tabs{
+  display:flex;
+  gap:8px;
+  border-bottom:2px solid var(--border);
+  padding:0 16px;
+  overflow-x:auto;
+  scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;
+  margin-top:12px;
+}
+
+.nav-tabs::-webkit-scrollbar{
+  height:3px;
+}
+
+.nav-tabs::-webkit-scrollbar-track{
+  background:#0d1219;
+}
+
+.nav-tabs::-webkit-scrollbar-thumb{
+  background:var(--accent);
+  border-radius:2px;
+}
+
+.nav-tab{
+  padding:12px 14px;
+  white-space:nowrap;
+  cursor:pointer;
+  border:none;
+  background:transparent;
+  color:var(--muted);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  transition:all .2s;
+  border-bottom:3px solid transparent;
+  position:relative;
+  bottom:-2px;
+}
+
+.nav-tab.active{
+  color:var(--accent);
+  border-bottom-color:var(--accent);
+}
+
+/* ── VIEWS ── */
+.view{
+  display:none;
+  padding:16px;
+  animation:fadeIn .3s;
+}
+
+.view.active{
+  display:block;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(8px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* ── CONTROL BARS ── */
+.control-bar{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:12px;
+  margin-bottom:14px;
+  display:flex;
+  gap:8px;
+  align-items:stretch;
+  flex-wrap:wrap;
+}
+
+.control-bar input[type="text"],
+.control-bar input[type="date"]{
+  flex:1;
+  min-width:120px;
+  background:var(--panel);
+  border:1px solid var(--border2);
+  border-radius:6px;
+  padding:10px;
+  color:var(--text);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;
+  outline:none;
+  transition:border-color .2s;
+}
+
+.control-bar input[type="text"]:focus,
+.control-bar input[type="date"]:focus{
+  border-color:var(--accent);
+}
+
+.control-bar button{
+  background:var(--accent);
+  color:#000;
+  border:none;
+  border-radius:6px;
+  padding:10px 16px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;
+  font-size:12px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:all .2s;
+  white-space:nowrap;
+}
+
+.control-bar button:active{
+  background:#ffd060;
+  transform:scale(0.98);
+}
+
+/* ── CARDS ── */
+.cards{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:14px;
+  transition:all .2s;
+}
+
+.card:active{
+  transform:scale(0.98);
+  border-color:var(--accent);
+}
+
+.card-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:16px;
+  font-weight:900;
+  letter-spacing:2px;
+  color:var(--text);
+  margin-bottom:8px;
+  text-transform:uppercase;
+}
+
+.card-subtitle{
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:1px;
+  margin-bottom:10px;
+}
+
+.stat-row{
+  display:flex;
+  justify-content:space-between;
+  padding:8px 0;
+  border-bottom:1px solid var(--border);
+  font-size:13px;
+}
+
+.stat-row:last-child{
+  border-bottom:none;
+}
+
+.stat-label{
+  color:var(--muted);
+}
+
+.stat-value{
+  font-weight:600;
+  color:var(--text);
+}
+
+/* ── TEMP COLORS ── */
+.temp-cold{ color:#3b9bff; }
+.temp-cool{ color:#6fcf60; }
+.temp-mild{ color:#f0c040; }
+.temp-warm{ color:#ff8c30; }
+.temp-hot{ color:#ff4545; }
+
+.wind-calm{ color:#6fcf60; }
+.wind-light{ color:#f0c040; }
+.wind-moderate{ color:#ff8c30; }
+.wind-strong{ color:#ff4545; }
+
+/* ── LOADING ── */
+.loading{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:40px 20px;
+  gap:16px;
+}
+
+.spinner{
+  width:40px;
+  height:40px;
+  border:3px solid var(--border2);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+  to{ transform:rotate(360deg); }
+}
+
+.loading-text{
+  font-size:13px;
+  color:var(--muted);
+  text-align:center;
+}
+
+/* ── EMPTY STATE ── */
+.empty-state{
+  text-align:center;
+  padding:40px 20px;
+  color:var(--muted);
+}
+
+.empty-state-icon{
+  font-size:40px;
+  margin-bottom:12px;
+}
+
+.empty-state-text{
+  font-size:14px;
+  line-height:1.6;
+}
+
+/* ── WEATHER GRID ── */
+.weather-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin-top:12px;
+}
+
+.weather-item{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:10px;
+  text-align:center;
+  font-size:12px;
+}
+
+.weather-item-value{
+  font-size:18px;
+  font-weight:700;
+  color:var(--accent);
+  margin:6px 0;
+}
+
+.weather-item-label{
+  color:var(--muted);
+  font-size:11px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+/* ── FP CARDS ── */
+.fp-card{
+  background:var(--surface);
+  border:2px solid var(--border2);
+  border-radius:8px;
+  padding:14px;
+  margin-bottom:12px;
+  transition:all .2s;
+  border-left:5px solid var(--team-color,var(--accent));
+}
+
+.fp-card.state-live{
+  border-color:var(--c-green);
+  animation:pulse-border 2s infinite;
+}
+
+@keyframes pulse-border{
+  0%,100%{opacity:1;}
+  50%{opacity:0.5;}
+}
+
+.fp-card-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.fp-team-badge{
+  background:var(--team-color,var(--accent));
+  color:#000;
+  padding:4px 10px;
+  border-radius:4px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:900;
+  font-size:12px;
+  letter-spacing:1.5px;
+}
+
+.fp-vs-sep{
+  font-size:11px;
+  color:var(--muted);
+  font-weight:700;
+  padding:0 4px;
+}
+
+.fp-state-badge{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1px;
+  padding:4px 8px;
+  border-radius:4px;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+
+.fp-state-pre{ background:var(--dim); color:var(--muted); }
+.fp-state-live{ background:rgba(48,217,138,0.3); color:var(--c-green); }
+.fp-state-final{ background:rgba(51,155,255,0.3); color:var(--blue); }
+.fp-state-cancelled{ background:rgba(255,69,69,0.3); color:var(--c-red); }
+.fp-state-postponed{ background:rgba(240,192,64,0.3); color:var(--accent); }
+
+.fp-card-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:1px;
+  margin:8px 0;
+  color:var(--text);
+}
+
+.fp-card-divider{
+  height:1px;
+  background:var(--border);
+  margin:8px 0;
+}
+
+.fp-info-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:6px 0;
+  font-size:12px;
+}
+
+.fp-info-label{
+  color:var(--muted);
+  font-weight:600;
+}
+
+.fp-info-value{
+  color:var(--text);
+  font-weight:700;
+}
+
+.fp-info-value.accent{
+  color:var(--accent);
+}
+
+.fp-wx-panel{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:10px;
+  margin-top:10px;
+  font-size:12px;
+}
+
+.fp-wx-header{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:900;
+  letter-spacing:1.5px;
+  color:var(--accent);
+  margin-bottom:8px;
+  text-transform:uppercase;
+  font-size:12px;
+}
+
+.fp-wx-stat{
+  display:flex;
+  justify-content:space-between;
+  padding:4px 0;
+  font-size:11px;
+}
+
+.fp-wx-stat-label{
+  color:var(--muted);
+}
+
+.fp-wx-stat-value{
+  font-weight:700;
+  color:var(--text);
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:480px){
+  .site-header{
+    flex-direction:column;
+    align-items:flex-start;
+    padding:10px 12px;
+  }
+
+  .header-title{
+    font-size:16px;
+    letter-spacing:1.5px;
+  }
+
+  .nav-tabs{
+    width:100%;
+    padding:0;
+    margin-left:-16px;
+    margin-right:-16px;
+    margin-top:8px;
+  }
+
+  .nav-tab{
+    padding:10px 12px;
+    font-size:11px;
+    letter-spacing:0.5px;
+  }
+
+  .view{
+    padding:12px;
+  }
+
+  .control-bar{
+    gap:6px;
+    padding:10px;
+  }
+
+  .weather-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+/* ── SCROLLING ── */
+::-webkit-scrollbar{
+  width:6px;
+}
+
+::-webkit-scrollbar-track{
+  background:var(--panel);
+}
+
+::-webkit-scrollbar-thumb{
+  background:var(--border2);
+  border-radius:3px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+  background:var(--accent);
+}
+</style>
+</head>
+<body>
+
+<div id="overlay" style="position:fixed;inset:0;background:#080b10;z-index:1000;display:flex;align-items:center;justify-content:center;">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Initializing…</div>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="site-header">
+  <div class="header-left">
+    <div style="font-size:24px;">⚾</div>
+    <div>
+      <div class="header-title">MLB Weather</div>
+      <div class="header-sub">HQ</div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation Tabs -->
+<div class="nav-tabs" role="tablist">
+  <button class="nav-tab active" data-view="current-view" role="tab">Current</button>
+  <button class="nav-tab" data-view="forecast-view" role="tab">Forecast</button>
+  <button class="nav-tab" data-view="firstpitch-view" role="tab">First Pitch</button>
+  <button class="nav-tab" data-view="alerts-view" role="tab">Alerts</button>
+</div>
+
+<!-- CURRENT VIEW -->
+<div id="current-view" class="view active">
+  <div class="control-bar">
+    <input type="text" id="current-search" placeholder="Enter city or team…" maxlength="50"/>
+    <button onclick="searchCurrent()">Search</button>
+  </div>
+  <div id="current-cards" class="cards"></div>
+</div>
+
+<!-- FORECAST VIEW -->
+<div id="forecast-view" class="view">
+  <div class="control-bar">
+    <input type="text" id="forecast-search" placeholder="Enter team or city…" maxlength="50"/>
+    <button onclick="searchForecast()">Go</button>
+  </div>
+  <div id="forecast-cards" class="cards"></div>
+</div>
+
+<!-- FIRST PITCH VIEW -->
+<div id="firstpitch-view" class="view">
+  <div class="control-bar">
+    <input type="date" id="fp-date"/>
+    <button onclick="renderFirstPitch()">Load</button>
+  </div>
+  <div id="fp-status" style="font-size:11px;color:var(--muted);padding:0 16px;margin-bottom:12px;letter-spacing:1px;text-transform:uppercase;">—</div>
+  <div id="fp-grid" class="cards"></div>
+</div>
+
+<!-- ALERTS VIEW -->
+<div id="alerts-view" class="view">
+  <div class="empty-state">
+    <div class="empty-state-icon">⚠️</div>
+    <div class="empty-state-text">Weather alerts will appear here for your selected teams.</div>
+  </div>
+</div>
+
+<script>
+// ── CONSTANTS ────────────────────────────────────────────────────────────────
+const TEAMS = [
+  {abbr:'BAL',name:'Baltimore Orioles',stadium:'Oriole Park at Camden Yards'},
+  {abbr:'BOS',name:'Boston Red Sox',stadium:'Fenway Park'},
+  {abbr:'NYY',name:'New York Yankees',stadium:'Yankee Stadium'},
+  {abbr:'TB',name:'Tampa Bay Rays',stadium:'Tropicana Field'},
+  {abbr:'TOR',name:'Toronto Blue Jays',stadium:'Rogers Centre'},
+  {abbr:'CWS',name:'Chicago White Sox',stadium:'Guaranteed Rate Field'},
+  {abbr:'CLE',name:'Cleveland Guardians',stadium:'Progressive Field'},
+  {abbr:'DET',name:'Detroit Tigers',stadium:'Comerica Park'},
+  {abbr:'KC',name:'Kansas City Royals',stadium:'Kauffman Stadium'},
+  {abbr:'MIN',name:'Minnesota Twins',stadium:'Target Field'},
+  {abbr:'HOU',name:'Houston Astros',stadium:'Minute Maid Park'},
+  {abbr:'LAA',name:'Los Angeles Angels',stadium:'Angel Stadium'},
+  {abbr:'OAK',name:'Oakland Athletics',stadium:'Oakland Coliseum'},
+  {abbr:'SEA',name:'Seattle Mariners',stadium:'T-Mobile Park'},
+  {abbr:'TEX',name:'Texas Rangers',stadium:'Globe Life Park'},
+  {abbr:'ARI',name:'Arizona Diamondbacks',stadium:'Chase Field'},
+  {abbr:'COL',name:'Colorado Rockies',stadium:'Coors Field'},
+  {abbr:'LAD',name:'Los Angeles Dodgers',stadium:'Dodger Stadium'},
+  {abbr:'SD',name:'San Diego Padres',stadium:'Petco Park'},
+  {abbr:'SF',name:'San Francisco Giants',stadium:'Oracle Park'},
+  {abbr:'ATL',name:'Atlanta Braves',stadium:'Truist Park'},
+  {abbr:'MIA',name:'Miami Marlins',stadium:'loanDepot Park'},
+  {abbr:'NYM',name:'New York Mets',stadium:'Citi Field'},
+  {abbr:'PHI',name:'Philadelphia Phillies',stadium:'Citizens Bank Park'},
+  {abbr:'WSH',name:'Washington Nationals',stadium:'Nationals Park'},
+  {abbr:'CHC',name:'Chicago Cubs',stadium:'Wrigley Field'},
+  {abbr:'CIN',name:'Cincinnati Reds',stadium:'Great American Ball Park'},
+  {abbr:'MIL',name:'Milwaukee Brewers',stadium:'American Family Field'},
+  {abbr:'PIT',name:'Pittsburgh Pirates',stadium:'PNC Park'},
+  {abbr:'STL',name:'St. Louis Cardinals',stadium:'Busch Stadium'}
+];
+
+// ── COLOR MAPPING ────────────────────────────────────────────────────────────
+function tempColor(t){
+  if(t<=32) return 'temp-cold';
+  if(t<=50) return 'temp-cool';
+  if(t<=75) return 'temp-mild';
+  if(t<=85) return 'temp-warm';
+  return 'temp-hot';
+}
+
+function windColor(w){
+  if(w<=5) return 'wind-calm';
+  if(w<=15) return 'wind-light';
+  if(w<=25) return 'wind-moderate';
+  return 'wind-strong';
+}
+
+// ── TAB NAVIGATION ────────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    tab.classList.add('active');
+    const viewId = tab.getAttribute('data-view');
+    document.getElementById(viewId).classList.add('active');
+  });
+});
+
+// ── SEARCH FUNCTIONS ─────────────────────────────────────────────────────────
+function searchCurrent(){
+  const query = document.getElementById('current-search').value.toLowerCase().trim();
+  if(!query) return;
+  const team = TEAMS.find(t=>t.name.toLowerCase().includes(query)||t.abbr.toLowerCase()===query);
+  if(team){
+    const container = document.getElementById('current-cards');
+    container.innerHTML=`<div class="loading"><div class="spinner"></div><div class="loading-text">Loading weather…</div></div>`;
+    // Simulate weather data
+    setTimeout(()=>{
+      container.innerHTML=`
+        <div class="card">
+          <div class="card-title">${team.abbr}</div>
+          <div class="card-subtitle">${team.name}</div>
+          <div class="stat-row">
+            <span class="stat-label">Temperature</span>
+            <span class="stat-value ${tempColor(72)}">72°F</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Wind Speed</span>
+            <span class="stat-value ${windColor(8)}">8 mph</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Humidity</span>
+            <span class="stat-value">65%</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Condition</span>
+            <span class="stat-value">Partly Cloudy</span>
+          </div>
+        </div>
+      `;
+    },600);
+  } else {
+    document.getElementById('current-cards').innerHTML=`
+      <div class="empty-state">
+        <div class="empty-state-icon">🔍</div>
+        <div class="empty-state-text">Team or city not found. Try another search.</div>
+      </div>
+    `;
+  }
+}
+
+function searchForecast(){
+  const query = document.getElementById('forecast-search').value.toLowerCase().trim();
+  if(!query) return;
+  const team = TEAMS.find(t=>t.name.toLowerCase().includes(query)||t.abbr.toLowerCase()===query);
+  if(team){
+    const container = document.getElementById('forecast-cards');
+    container.innerHTML=`<div class="loading"><div class="spinner"></div><div class="loading-text">Loading forecast…</div></div>`;
+    setTimeout(()=>{
+      const days = ['Mon','Tue','Wed','Thu','Fri'];
+      const temps = [68,72,70,75,73];
+      container.innerHTML=`
+        <div class="card">
+          <div class="card-title">5-Day Forecast</div>
+          <div class="card-subtitle">${team.abbr} at ${team.stadium}</div>
+          <div class="weather-grid">
+            ${days.map((d,i)=>`
+              <div class="weather-item">
+                <div class="weather-item-label">${d}</div>
+                <div class="weather-item-value ${tempColor(temps[i])}">${temps[i]}°</div>
+                <div class="weather-item-label">Partly Cloudy</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    },600);
+  } else {
+    document.getElementById('forecast-cards').innerHTML=`
+      <div class="empty-state">
+        <div class="empty-state-icon">📅</div>
+        <div class="empty-state-text">Team or city not found.</div>
+      </div>
+    `;
+  }
+}
+
+// ── FIRST PITCH ──────────────────────────────────────────────────────────────
+function fpTodayStr(){
+  const d = new Date();
+  return d.toISOString().split('T')[0];
+}
+
+function fpFormatTime(dateStr){
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+}
+
+function buildFPCard(game){
+  const home = game.teams.home;
+  const away = game.teams.away;
+  const homeTeam = TEAMS.find(t=>t.abbr===home.team.name.substring(0,3).toUpperCase());
+  const awayTeam = TEAMS.find(t=>t.abbr===away.team.name.substring(0,3).toUpperCase());
+  const homeAbbr = homeTeam?.abbr || home.team.name.substring(0,3).toUpperCase();
+  const awayAbbr = awayTeam?.abbr || away.team.name.substring(0,3).toUpperCase();
+  const time = fpFormatTime(game.gameDate);
+  const date = game.gameDate.split('T')[0];
+
+  return `<div class="fp-card">
+    <div class="fp-card-top">
+      <div style="display:flex;gap:4px;">
+        <span class="fp-team-badge">${awayAbbr}</span>
+        <span class="fp-vs-sep">@</span>
+        <span class="fp-team-badge">${homeAbbr}</span>
+      </div>
+      <span class="fp-state-badge fp-state-pre">Scheduled</span>
+    </div>
+    <div class="fp-card-name">${away.team.name} @ ${home.team.name}</div>
+    <div class="fp-card-divider"></div>
+    <div class="fp-info-row">
+      <span class="fp-info-label">⏰ First Pitch</span>
+      <span class="fp-info-value accent">${time}</span>
+    </div>
+    <div class="fp-info-row">
+      <span class="fp-info-label">📅 Date</span>
+      <span class="fp-info-value">${date}</span>
+    </div>
+    <div class="fp-info-row">
+      <span class="fp-info-label">🏟 Stadium</span>
+      <span class="fp-info-value" style="text-align:right;font-size:11px;">${homeTeam?.stadium||'—'}</span>
+    </div>
+  </div>`;
+}
+
+let fpCache = {};
+let fpLoading = false;
+
+async function renderFirstPitch(){
+  if(fpLoading) return;
+  const dateInput = document.getElementById('fp-date');
+  if(!dateInput.value) dateInput.value = fpTodayStr();
+  const date = dateInput.value;
+
+  const grid = document.getElementById('fp-grid');
+  const statusEl = document.getElementById('fp-status');
+
+  if(fpCache[date]){
+    renderFPGames(fpCache[date]);
+    return;
+  }
+
+  grid.innerHTML=`<div class="loading"><div class="spinner"></div><div class="loading-text">Loading schedule…</div></div>`;
+  statusEl.textContent='Loading…';
+  fpLoading=true;
+
+  try{
+    const mlbUrl = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${date}&hydrate=team`;
+    let data;
+    try{
+      const direct = await fetch(mlbUrl,{mode:'cors'});
+      if(!direct.ok) throw new Error('direct failed');
+      data = await direct.json();
+    }catch(_){
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(mlbUrl)}`;
+      const proxyRes = await fetch(proxyUrl);
+      if(!proxyRes.ok) throw new Error(`Proxy HTTP ${proxyRes.status}`);
+      const wrapper = await proxyRes.json();
+      data = JSON.parse(wrapper.contents);
+    }
+    const games = [];
+    (data.dates||[]).forEach(d=>(d.games||[]).forEach(g=>games.push(g)));
+    fpCache[date] = games;
+    renderFPGames(games);
+  }catch(e){
+    grid.innerHTML=`<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Failed to load schedule</div></div>`;
+    statusEl.textContent='Error';
+  }finally{
+    fpLoading=false;
+  }
+}
+
+async function renderFPGames(allGames){
+  const grid = document.getElementById('fp-grid');
+  const statusEl = document.getElementById('fp-status');
+  const sorted = allGames.slice().sort((a,b)=>new Date(a.gameDate)-new Date(b.gameDate));
+
+  statusEl.textContent = `${sorted.length} game${sorted.length!==1?'s':''} · ${document.getElementById('fp-date').value}`;
+
+  if(!sorted.length){
+    grid.innerHTML=`<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">No games on this date</div></div>`;
+    return;
+  }
+
+  grid.innerHTML = sorted.map(buildFPCard).join('');
+}
+
+// ── STARTUP ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  const overlay = document.getElementById('overlay');
+  if(overlay) overlay.classList.add('gone');
+  const fpDate = document.getElementById('fp-date');
+  if(fpDate) fpDate.value = fpTodayStr();
+});
+
+// Remove overlay on load
+window.addEventListener('load',()=>{
+  const overlay = document.getElementById('overlay');
+  if(overlay) setTimeout(()=>overlay.style.display='none',500);
+});
+</script>
+</body>
+</html>
